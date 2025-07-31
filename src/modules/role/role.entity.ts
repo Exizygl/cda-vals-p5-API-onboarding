@@ -1,9 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
-import { Utilisateur } from '../utilisateur.entity';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
+import { Utilisateur } from '../utilisateur/utilisateur.entity';
 
 @Entity('role')
 export class Role {
-  @PrimaryGeneratedColumn({ name: 'id_role', type: 'bigint' })
+  @PrimaryColumn({ name: 'id_role', type: 'bigint' })
   id: number;
 
   @Column({ name: 'nom_role', type: 'varchar', length: 100 })
