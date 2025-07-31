@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 
 
 @Entity('statut_promo')
-export class Role {
+export class StatutPromo {
   @PrimaryGeneratedColumn({ name: 'id_statut_promo', type: 'smallint' })
   id: number;
 
