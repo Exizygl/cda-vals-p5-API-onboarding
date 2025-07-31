@@ -1,6 +1,6 @@
-// src/modules/user/user.entity.ts
-import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable,OneToMany } from 'typeorm';
 import { Role } from '../role/role.entity';
+import { Identification } from '../identification/identification.entity';
 
 @Entity({ name: 'utilisateur' }) 
 export class Utilisateur {
@@ -32,6 +32,9 @@ export class Utilisateur {
     },
   })
   roles: Role[];
+
+  @OneToMany(() => Identification, (identification) => identification['utilisateur'])
+  identifications: Identification[];
 }
 
 
