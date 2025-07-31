@@ -1,9 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn} from 'typeorm';
 
 
 @Entity('campus')
-export class Role {
-  @PrimaryGeneratedColumn({ name: 'id_campus', type: 'bigint' })
+export class Campus {
+  @PrimaryColumn({ name: 'id_campus', type: 'bigint' })
   id: number;
 
   @Column({ name: 'nom_campus', type: 'varchar', length: 100 })
