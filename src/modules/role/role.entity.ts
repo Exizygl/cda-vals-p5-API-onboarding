@@ -4,7 +4,7 @@ import { Utilisateur } from '../utilisateur/utilisateur.entity';
 @Entity('role')
 export class Role {
   @PrimaryColumn({ name: 'id_role', type: 'bigint' })
-  id: number;
+  id: string;
 
   @Column({ name: 'nom_role', type: 'varchar', length: 100 })
   name: string;
@@ -13,10 +13,10 @@ export class Role {
   selectionnable: boolean;
 
   @CreateDateColumn({ name: 'date_creation_role', type: 'timestamptz' })
-  createdAt: Date;
+  dateCreation: Date;
 
   @UpdateDateColumn({ name: 'date_modification_role', type: 'timestamptz' })
-  updatedAt: Date;
+  dateModification: Date;
 
   @ManyToMany(() => Utilisateur, utilisateur => utilisateur.roles)
   utilisateurs: Utilisateur[];
