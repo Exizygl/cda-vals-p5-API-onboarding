@@ -4,7 +4,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 @Entity('statut_promo')
 export class StatutPromo {
   @PrimaryGeneratedColumn({ name: 'id_statut_promo', type: 'smallint' })
-  id: number;
+  id: string;
 
   @Column({ name: 'libelle_statut_promo', type: 'varchar', length: 50 })
   libelle: string;
