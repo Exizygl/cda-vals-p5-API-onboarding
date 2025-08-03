@@ -17,7 +17,7 @@ export class Utilisateur {
   dateCreation: Date;
 
   @UpdateDateColumn({ name: 'date_modification_utilisateur', type: 'timestamptz', nullable: true })
-  dateModification: Date;
+  dateModification: Date | null;
 
   @ManyToMany(() => Role, (role) => role.utilisateurs)
   @JoinTable({
