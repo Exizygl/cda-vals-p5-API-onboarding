@@ -5,6 +5,6 @@ export class UtilisateurDto {
   id: string;
   nom: string;
   prenom: string;
-  roles: Role[];
+  rolesId: string[];
   identifications: Identification[];
 }
