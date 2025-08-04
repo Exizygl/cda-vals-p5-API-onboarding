@@ -7,7 +7,7 @@ export class Role {
   id: string;
 
   @Column({ name: 'nom_role', type: 'varchar', length: 100 })
-  name: string;
+  nom: string;
 
   @Column({ name: 'selectionnable_role', type: 'boolean' })
   selectionnable: boolean;
