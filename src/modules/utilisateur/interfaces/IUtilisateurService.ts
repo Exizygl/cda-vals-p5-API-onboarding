@@ -1,7 +1,7 @@
-import { UtilisateurDto } from '../dto/utilisateur.dto';
+import { CreateUtilisateurDto } from '../dto/createUtilisateur.dto';
 import { Utilisateur } from '../utilisateur.entity';
 
 export interface IUtilisateurService {
-  create(dto: UtilisateurDto): Promise<Utilisateur>;
+  create(dto: CreateUtilisateurDto): Promise<Utilisateur>;
 
 }
