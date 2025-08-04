@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UtilisateurController } from './utilisateur.controller';
 import { UtilisateurService } from './utilisateur.service';
-import { UtilisateurDto } from './dto/utilisateur.dto';
+import { CreateUtilisateurDto } from './dto/createUtilisateur.dto';
 
 describe('UtilisateurController', () => {
   let controller: UtilisateurController;
@@ -30,12 +30,12 @@ describe('UtilisateurController', () => {
 
   describe('create', () => {
     it('should call UtilisateurService.create and return the result', async () => {
-      const dto: UtilisateurDto = {
+      const dto: CreateUtilisateurDto = {
         id: '123456789012345678',
         nom: 'TestNom',
         prenom: 'TestPrenom',
         rolesId: ['1', '2'],
-        identifications: [],
+        
       };
 
       const expectedResult = { ...dto, roles: [{ id: '1' }, { id: '2' }] };
