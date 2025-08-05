@@ -14,10 +14,10 @@ export class Utilisateur {
   prenom: string;
 
   @CreateDateColumn({ name: 'date_creation_utilisateur', type: 'timestamptz' })
-  dateCreation: Date;
+  dateCreation?: Date;
 
   @UpdateDateColumn({ name: 'date_modification_utilisateur', type: 'timestamptz', nullable: true })
-  dateModification: Date;
+  dateModification?: Date | null;
 
   @ManyToMany(() => Role, (role) => role.utilisateurs)
   @JoinTable({
@@ -31,10 +31,10 @@ export class Utilisateur {
       referencedColumnName: 'id',
     },
   })
-  roles: Role[];
+  roles?: Role[];
 
   @OneToMany(() => Identification, (identification) => identification['utilisateur'])
-  identifications: Identification[];
+  identifications?: Identification[];
 }
 
 
