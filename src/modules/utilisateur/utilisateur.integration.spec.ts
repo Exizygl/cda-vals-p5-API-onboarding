@@ -29,7 +29,7 @@ describe('UtilisateurService (Integration)', () => {
   });
 
   afterAll(async () => {
-    await moduleRef.close();  // closes DB connections and Nest module properly
+    await moduleRef.close();  
   });
 
   it('should create a user with roles', async () => {
@@ -50,7 +50,7 @@ describe('UtilisateurService (Integration)', () => {
 
     const user = await service.create(dto);
     const usersInDb = await utilisateurRepository.find(); 
-    console.log('Users in DB after create:', usersInDb);
+    
 
     expect(user.id).toEqual(dto.id);
     expect(user.roles?.[0]?.id).toEqual(savedRole.id);
