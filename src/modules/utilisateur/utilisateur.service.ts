@@ -34,6 +34,7 @@ export class UtilisateurService implements IUtilisateurService {
       throw new NotFoundException(`Role(s) pas trouver: ${missing.join(', ')}`);
     }
     const utilisateur = this.utilisateurRepository.create(dto);
+    utilisateur.roles = roles;
     return this.utilisateurRepository.save(utilisateur);
   }
 
