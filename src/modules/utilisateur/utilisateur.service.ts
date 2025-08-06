@@ -6,8 +6,7 @@ import { CreateUtilisateurDto } from './dto/createUtilisateur.dto';
 import { IUtilisateurService } from './interfaces/IUtilisateurService';
 import { IRoleServiceToken } from '../role/role.constants';
 import { IRoleService }from '../role/interface/IRoleService';
-
-
+import { UpdateUtilisateurDto } from './dto/updateUtilisateur.dto';
 
 @Injectable()
 export class UtilisateurService implements IUtilisateurService {
@@ -37,5 +36,16 @@ export class UtilisateurService implements IUtilisateurService {
     utilisateur.roles = roles;
     return this.utilisateurRepository.save(utilisateur);
   }
+
+    async update(id: string, dto: UpdateUtilisateurDto): Promise<Utilisateur> {
+    const utilisateur = await this.utilisateurRepository.findOne({ where: { id } });
+
+    if (!utilisateur) {
+    throw new NotFoundException(`Utilisateur avec l'id ${id} introuvable`);
+    }
+
+    const updated = this.utilisateurRepository.merge(utilisateur, dto);
+    return this.utilisateurRepository.save(updated);
+    }
 
 }
