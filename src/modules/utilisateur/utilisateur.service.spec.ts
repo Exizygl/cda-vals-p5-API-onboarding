@@ -116,4 +116,84 @@ describe('UtilisateurService', () => {
 
 });
 
-});
+  it('should add roles to an existing user', async () => {
+    const userId = '123456789012345678';
+    const existingRoles: Role[] = [{ id: '1' } as Role];
+    const newRoles: Role[] = [{ id: '2' } as Role];
+
+    const utilisateur = {
+      id: userId,
+      roles: existingRoles,
+    } as Utilisateur;
+
+    utilisateurRepo.findOne.mockResolvedValue(utilisateur);
+    roleServiceMock.findByIds.mockResolvedValue(newRoles);
+    utilisateurRepo.save.mockResolvedValue({
+      ...utilisateur,
+      roles: [...existingRoles, ...newRoles],
+    });
+
+    const result = await service.addRoles(userId, ['2']);
+
+    expect(result.roles).toHaveLength(2);
+    expect(utilisateurRepo.save).toHaveBeenCalled();
+  });
+
+  it('should remove roles from an existing user', async () => {
+    const userId = '123456789012345678';
+    const allRoles: Role[] = [
+      { id: '1' } as Role,
+      { id: '2' } as Role,
+    ];
+
+    const utilisateur = {
+      id: userId,
+      roles: allRoles,
+    } as Utilisateur;
+
+    utilisateurRepo.findOne.mockResolvedValue(utilisateur);
+    roleServiceMock.findByIds.mockResolvedValue(allRoles);
+    utilisateurRepo.save.mockResolvedValue({
+      ...utilisateur,
+      roles: [{ id: '2' } as Role],
+    });
+
+    const result = await service.removeRoles(userId, ['1']);
+
+    expect(result.roles).toEqual([{ id: '2' }]);
+    expect(utilisateurRepo.save).toHaveBeenCalled();
+  });
+
+  it('should throw when user not found in addRoles', async () => {
+    utilisateurRepo.findOne.mockResolvedValue(null);
+
+    await expect(service.addRoles('unknown', ['1']))
+      .rejects.toThrow('Utilisateur not found');
+  });
+
+  it('should throw when user not found in removeRoles', async () => {
+    utilisateurRepo.findOne.mockResolvedValue(null);
+
+    await expect(service.removeRoles('unknown', ['1']))
+      .rejects.toThrow('Utilisateur not found');
+  });
+
+  it('should throw if roles to add do not exist', async () => {
+    const userId = '123456789012345678';
+    const utilisateur = {
+  id: userId,
+  nom: 'Test',
+  prenom: 'User',
+  roles: [],
+  identifications: [],
+} as Utilisateur;
+
+    utilisateurRepo.findOne.mockResolvedValue(utilisateur);
+    roleServiceMock.findByIds.mockResolvedValue([]);
+
+    await expect(service.addRoles(userId, ['999']))
+      .rejects.toThrow('Role(s) pas trouver: 999');
+  });
+
+
+  });
