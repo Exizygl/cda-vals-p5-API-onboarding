@@ -6,8 +6,7 @@ import { CreateUtilisateurDto } from './dto/createUtilisateur.dto';
 import { IUtilisateurService } from './interfaces/IUtilisateurService';
 import { IRoleServiceToken } from '../role/role.constants';
 import { IRoleService }from '../role/interface/IRoleService';
-
-
+import { UpdateUtilisateurDto } from './dto/updateUtilisateur.dto';
 
 @Injectable()
 export class UtilisateurService implements IUtilisateurService {
@@ -37,5 +36,70 @@ export class UtilisateurService implements IUtilisateurService {
     utilisateur.roles = roles;
     return this.utilisateurRepository.save(utilisateur);
   }
+
+    async update(id: string, dto: UpdateUtilisateurDto): Promise<Utilisateur> {
+    const utilisateur = await this.utilisateurRepository.findOne({ where: { id } });
+
+    if (!utilisateur) {
+    throw new NotFoundException(`Utilisateur avec l'id ${id} introuvable`);
+    }
+
+    const updated = this.utilisateurRepository.merge(utilisateur, dto);
+    return this.utilisateurRepository.save(updated);
+    }
+
+    async addRoles(id: string, rolesId: string[]): Promise<Utilisateur> {
+    const utilisateur = await this.utilisateurRepository.findOne({
+      where: { id },
+      relations: ['roles'],
+    });
+
+    if (!utilisateur) {
+      throw new NotFoundException('Utilisateur not found');
+    }
+
+    const rolesToAdd = await this.roleService.findByIds(rolesId);
+
+    const foundRoleIds = rolesToAdd.map(role => role.id);
+    const missingRoles = rolesId.filter(id => !foundRoleIds.includes(id));
+    if (missingRoles.length > 0) {
+      throw new NotFoundException(`Role(s) pas trouver: ${missingRoles.join(', ')}`);
+    }
+
+    utilisateur.roles = [
+  ...(utilisateur.roles || []), 
+  ...rolesToAdd.filter(role => 
+    !utilisateur.roles?.some(existing => existing.id === role.id)
+  )
+];
+    return this.utilisateurRepository.save(utilisateur);
+  }
+
+  async removeRoles(id: string, rolesId: string[]): Promise<Utilisateur> {
+  const utilisateur = await this.utilisateurRepository.findOne({
+    where: { id },
+    relations: ['roles'],
+  });
+
+  if (!utilisateur) {
+    throw new NotFoundException('Utilisateur not found');
+  }
+
+  
+  const roles = await this.roleService.findByIds(rolesId);
+  const foundIds = roles.map(role => role.id);
+  const notFound = rolesId.filter(id => !foundIds.includes(id));
+
+  if (notFound.length > 0) {
+    throw new NotFoundException(`Role(s) not found: ${notFound.join(', ')}`);
+  }
+
+ 
+  utilisateur.roles = (utilisateur.roles || []).filter(
+    role => !rolesId.includes(role.id)
+  );
+
+  return this.utilisateurRepository.save(utilisateur);
+}
 
 }
