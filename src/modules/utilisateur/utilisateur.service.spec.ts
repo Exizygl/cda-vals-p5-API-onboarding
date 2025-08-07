@@ -21,7 +21,7 @@ describe('UtilisateurService', () => {
   const roleServiceMock: jest.Mocked<IRoleService> = {
     findByIds: jest.fn(),
     create: jest.fn(),
-  };
+  }as Partial<jest.Mocked<IRoleService>> as jest.Mocked<IRoleService>;
 
   beforeEach(async () => {
     utilisateurRepo = {
@@ -83,8 +83,12 @@ describe('UtilisateurService', () => {
 
     expect(result).toEqual(createdUser);
     expect(roleServiceMock.findByIds).toHaveBeenCalledWith(dto.rolesId);
-    expect(utilisateurRepo.create).toHaveBeenCalled();
-    expect(utilisateurRepo.save).toHaveBeenCalledWith(createdUser);
+    expect(utilisateurRepo.save).toHaveBeenCalledWith(expect.objectContaining({
+  id: dto.id,
+  nom: dto.nom,
+  prenom: dto.prenom,
+  roles: expect.arrayContaining(roles),
+}));
   });
 
   it('should throw if user already exists', async () => {
@@ -133,7 +137,7 @@ describe('UtilisateurService', () => {
       roles: [...existingRoles, ...newRoles],
     });
 
-    const result = await service.addRoles(userId, ['2']);
+    const result = await service.addRoles(userId,{ rolesId: ['2'] });
 
     expect(result.roles).toHaveLength(2);
     expect(utilisateurRepo.save).toHaveBeenCalled();
@@ -158,7 +162,7 @@ describe('UtilisateurService', () => {
       roles: [{ id: '2' } as Role],
     });
 
-    const result = await service.removeRoles(userId, ['1']);
+    const result = await service.removeRoles(userId, { rolesId: ['1'] });
 
     expect(result.roles).toEqual([{ id: '2' }]);
     expect(utilisateurRepo.save).toHaveBeenCalled();
@@ -167,14 +171,14 @@ describe('UtilisateurService', () => {
   it('should throw when user not found in addRoles', async () => {
     utilisateurRepo.findOne.mockResolvedValue(null);
 
-    await expect(service.addRoles('unknown', ['1']))
+    await expect(service.addRoles('unknown', { rolesId: ['1'] }))
       .rejects.toThrow('Utilisateur not found');
   });
 
   it('should throw when user not found in removeRoles', async () => {
     utilisateurRepo.findOne.mockResolvedValue(null);
 
-    await expect(service.removeRoles('unknown', ['1']))
+    await expect(service.removeRoles('unknown', { rolesId: ['1'] }))
       .rejects.toThrow('Utilisateur not found');
   });
 
@@ -191,7 +195,7 @@ describe('UtilisateurService', () => {
     utilisateurRepo.findOne.mockResolvedValue(utilisateur);
     roleServiceMock.findByIds.mockResolvedValue([]);
 
-    await expect(service.addRoles(userId, ['999']))
+    await expect(service.addRoles(userId, { rolesId: ['999'] }))
       .rejects.toThrow('Role(s) pas trouver: 999');
   });
 

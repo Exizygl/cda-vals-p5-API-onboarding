@@ -3,7 +3,7 @@ import { UtilisateurService } from './utilisateur.service';
 import { TestAppModule } from '../../test-app.module';
 import { Role } from '../role/role.entity';
 import { IRoleServiceToken } from '../role/role.constants';
-import { Utilisateur } from './utilisateur.entity'; // <-- add your entity
+import { Utilisateur } from './utilisateur.entity'; 
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
