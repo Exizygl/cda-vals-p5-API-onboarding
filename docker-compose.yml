@@ -27,9 +27,9 @@ services:
       - "3000:3000"
     environment:
       DB_HOST: db
-      DB_PORT: 5433
+      DB_PORT: 5432
       DB_USER: admin
-      DB_PASS: admin
+      DB_PASSWORD: admin
       DB_NAME: onboarding-db
       
     restart: unless-stopped
@@ -38,7 +38,7 @@ services:
 
   bot:
     build:
-      context: https://github.com/Simplon-hdf/cda-vals-p5-bot-onboarding/tree/develop
+      context: /home/zabiullah/Desktop/cda-vals-p5-bot-onboarding
       dockerfile: Dockerfile
     container_name: discord-bot
     environment:
