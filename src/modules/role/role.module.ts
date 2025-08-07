@@ -8,6 +8,7 @@ import { IRoleServiceToken } from './role.constants';
 @Module({
   imports: [TypeOrmModule.forFeature([Role])],
   providers: [
+    RoleService,
     {
       provide: IRoleServiceToken,
       useClass: RoleService,
