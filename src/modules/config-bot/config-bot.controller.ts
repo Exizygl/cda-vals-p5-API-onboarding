@@ -28,7 +28,13 @@ export class ConfigBotController {
 
   @Put(':id')
   async update(@Param('id') id: number, @Body() dto: Partial<ConfigBotDto>) {
-    const updated = await this.configBotService.update(id, dto);
+    const existing = await this.configBotService.findOne(id);
+    if (!existing) return null;
+    
+    // Merge only provided fields
+    const merged = { ...existing, ...dto };
+    const updated = await this.configBotService.update(id, merged);
+
     return updated ? ConfigBotMapper.toPublic(updated) : null;
   }
 
