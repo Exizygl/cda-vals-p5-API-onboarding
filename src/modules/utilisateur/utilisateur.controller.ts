@@ -1,13 +1,17 @@
-import { Body, Controller, Post, Get, Patch, Param, Delete} from '@nestjs/common';
+import { Body, Controller, Post, Get, Patch, Param, Delete, Inject} from '@nestjs/common';
 import { UtilisateurService } from './utilisateur.service';
 import { CreateUtilisateurDto } from './dto/createUtilisateur.dto';
 import { UpdateUtilisateurDto } from './dto/updateUtilisateur.dto';
 import { UpdateRolesUtilisateurDto } from './dto/updateRolesUtilisateur.dto';
+import { IUtilisateurServiceToken } from './Utilisateur.constant';
+import { IUtilisateurService } from './interfaces/IUtilisateurService'
 
 @Controller('utilisateurs')
 export class UtilisateurController {
-  constructor(private readonly utilisateurService: UtilisateurService) {}
-
+  constructor(
+    @Inject(IUtilisateurServiceToken)
+    private readonly utilisateurService: IUtilisateurService,
+  ) {}
   @Post()
   async create(@Body() dto: CreateUtilisateurDto) {
     return this.utilisateurService.create(dto);
