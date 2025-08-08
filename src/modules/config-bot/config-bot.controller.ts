@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Inject, Patch } from '@nestjs/common';
 import { IConfigBotServiceToken } from './config-bot.constants';
 import { IConfigBotService } from './interface/IConfigBotService';
 import { ConfigBotDto } from './dto/config-bot.dto';
@@ -28,7 +28,7 @@ export class ConfigBotController {
     return ConfigBotMapper.toPublic(created);
   }
 
-  @Put(':id')
+  @Patch(':id')
   async update(@Param('id') id: number, @Body() dto: Partial<ConfigBotDto>) {
     const updated = await this.configBotService.update(id, dto);
     return updated ? ConfigBotMapper.toPublic(updated) : null;
