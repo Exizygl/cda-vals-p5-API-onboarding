@@ -12,6 +12,7 @@ import { CampusModule } from './modules/campus/campus.module';
 import { StatutPromoModule } from './modules/statut-promo/statut-promo.module';
 import { StatutIdentificationModule } from './modules/statut-identification/statut-identification.module';
 import { PromoModule } from './modules/promo/promo.module';
+import { ConfigBotModule } from './modules/config-bot/config-bot.module';
 
 @Module({
   imports: [
@@ -24,11 +25,11 @@ import { PromoModule } from './modules/promo/promo.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get('DB_HOST'),
+        host: config.get('DB_HOST', 'localhost'),
         port: parseInt(config.get('DB_PORT', '5432'), 10),
-        username: config.get('DB_USER'),
-        password: config.get('DB_PASSWORD'),
-        database: config.get('DB_NAME'),
+        username: config.get('DB_USER', 'admin'),
+        password: config.get('DB_PASSWORD', 'admin'),
+        database: config.get('DB_NAME', 'onboarding-db'),
         synchronize: true,
         autoLoadEntities: true,
       }),
@@ -41,6 +42,7 @@ import { PromoModule } from './modules/promo/promo.module';
     StatutPromoModule,
     StatutIdentificationModule,
     PromoModule,
+    ConfigBotModule,
   ],
   controllers: [AppController],
   providers: [AppService],

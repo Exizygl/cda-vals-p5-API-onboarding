@@ -17,8 +17,6 @@ export class ConfigBotMapper {
     entity.templateApprenantRoleId = dto.templateApprenantRoleId;
     entity.templateAlumniRoleId = dto.templateAlumniRoleId;
     entity.templateFormateurRoleId = dto.templateFormateurRoleId;
-    entity.dateCreation = dto.dateCreation;
-    entity.dateModification = dto.dateModification;
     return entity;
   }
 
@@ -37,8 +35,6 @@ export class ConfigBotMapper {
       templateApprenantRoleId: entity.templateApprenantRoleId,
       templateAlumniRoleId: entity.templateAlumniRoleId,
       templateFormateurRoleId: entity.templateFormateurRoleId,
-      dateCreation: entity.dateCreation,
-      dateModification: entity.dateModification,
     };
   }
 }

@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
-import { ConfigBotService } from './config-bot.service';
+import { Controller, Get, Post, Delete, Body, Param, Inject, Patch } from '@nestjs/common';
+import { IConfigBotServiceToken } from './config-bot.constants';
+import { IConfigBotService } from './interface/IConfigBotService';
 import { ConfigBotDto } from './dto/config-bot.dto';
 import { ConfigBotMapper } from './config-bot.mapper';
 
 @Controller('config-bot')
 export class ConfigBotController {
-  constructor(private readonly configBotService: ConfigBotService) {}
+  constructor(@Inject(IConfigBotServiceToken)
+    private readonly configBotService: IConfigBotService,) {}
 
   @Get()
   async findAll() {
@@ -26,15 +28,9 @@ export class ConfigBotController {
     return ConfigBotMapper.toPublic(created);
   }
 
-  @Put(':id')
+  @Patch(':id')
   async update(@Param('id') id: number, @Body() dto: Partial<ConfigBotDto>) {
-    const existing = await this.configBotService.findOne(id);
-    if (!existing) return null;
-    
-    // Merge only provided fields
-    const merged = { ...existing, ...dto };
-    const updated = await this.configBotService.update(id, merged);
-
+    const updated = await this.configBotService.update(id, dto);
     return updated ? ConfigBotMapper.toPublic(updated) : null;
   }
 

@@ -12,6 +12,4 @@ export class ConfigBotDto {
     templateApprenantRoleId: string;
     templateAlumniRoleId: string;
     templateFormateurRoleId: string;
-    dateCreation: Date;
-    dateModification: Date;
 }
