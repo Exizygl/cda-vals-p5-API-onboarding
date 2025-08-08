@@ -7,6 +7,8 @@ import { IUtilisateurService } from './interfaces/IUtilisateurService';
 import { IRoleServiceToken } from '../role/role.constants';
 import { IRoleService }from '../role/interface/IRoleService';
 import { UpdateUtilisateurDto } from './dto/updateUtilisateur.dto';
+import { UtilisateurMapper } from './utilisateur.mapper';
+import { UpdateRolesUtilisateurDto } from './dto/updateRolesUtilisateur.dto';
 
 @Injectable()
 export class UtilisateurService implements IUtilisateurService {
@@ -32,9 +34,9 @@ export class UtilisateurService implements IUtilisateurService {
       const missing = dto.rolesId.filter((id) => !foundIds.includes(id));
       throw new NotFoundException(`Role(s) pas trouver: ${missing.join(', ')}`);
     }
-    const utilisateur = this.utilisateurRepository.create(dto);
-    utilisateur.roles = roles;
-    return this.utilisateurRepository.save(utilisateur);
+      const utilisateur = UtilisateurMapper.fromCreateDto(dto, roles);
+
+      return this.utilisateurRepository.save(utilisateur);
   }
 
     async update(id: string, dto: UpdateUtilisateurDto): Promise<Utilisateur> {
@@ -44,11 +46,15 @@ export class UtilisateurService implements IUtilisateurService {
     throw new NotFoundException(`Utilisateur avec l'id ${id} introuvable`);
     }
 
-    const updated = this.utilisateurRepository.merge(utilisateur, dto);
+    const updatedFields = UtilisateurMapper.fromUpdateDto(dto);
+    const updated = this.utilisateurRepository.merge(utilisateur, updatedFields);
+
     return this.utilisateurRepository.save(updated);
     }
 
-    async addRoles(id: string, rolesId: string[]): Promise<Utilisateur> {
+    async addRoles(id: string,  dto: UpdateRolesUtilisateurDto): Promise<Utilisateur> {
+    const rolesId = UtilisateurMapper.fromUpdateRolesDto(dto);
+    
     const utilisateur = await this.utilisateurRepository.findOne({
       where: { id },
       relations: ['roles'],
@@ -75,7 +81,8 @@ export class UtilisateurService implements IUtilisateurService {
     return this.utilisateurRepository.save(utilisateur);
   }
 
-  async removeRoles(id: string, rolesId: string[]): Promise<Utilisateur> {
+  async removeRoles(id: string, dto : UpdateRolesUtilisateurDto): Promise<Utilisateur> {
+   const rolesId = UtilisateurMapper.fromUpdateRolesDto(dto);
   const utilisateur = await this.utilisateurRepository.findOne({
     where: { id },
     relations: ['roles'],

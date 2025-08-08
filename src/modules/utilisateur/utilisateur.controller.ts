@@ -20,11 +20,11 @@ export class UtilisateurController {
 
    @Post(':id/roles')
   async addRoles(@Param('id') id: string, @Body() dto: UpdateRolesUtilisateurDto) {
-    return this.utilisateurService.addRoles(id, dto.rolesId);
+    return this.utilisateurService.addRoles(id, dto);
   }
 
   @Delete(':id/roles')
   async removeRoles(@Param('id') id: string, @Body() dto: UpdateRolesUtilisateurDto) {
-    return this.utilisateurService.removeRoles(id, dto.rolesId);
+    return this.utilisateurService.removeRoles(id, dto);
   }
 }

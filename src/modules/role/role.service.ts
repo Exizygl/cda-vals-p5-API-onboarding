@@ -1,24 +1,59 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable } from '@nestjs/common';
-import { Repository, In} from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Repository, In } from 'typeorm';
 import { Role } from './role.entity';
 import { IRoleService } from './interface/IRoleService';
-import { RoleDto } from './dto/role.dto';
-
+import { CreateRoleDto } from './dto/createRole.dto';
+import { UpdateRoleDto } from './dto/updateRole.dto';
+import { RoleMapper } from './role.mapper';
 
 @Injectable()
 export class RoleService implements IRoleService {
   constructor(
     @InjectRepository(Role)
-    private roleRepository: Repository<Role>,
+    private readonly roleRepository: Repository<Role>,
   ) {}
 
   async findByIds(ids: string[]): Promise<Role[]> {
     return this.roleRepository.find({ where: { id: In(ids) } });
   }
 
-  async create(dto: RoleDto): Promise<Role> {
-    const role = this.roleRepository.create(dto);
+  async findAll(): Promise<Role[]> {
+    return this.roleRepository.find();
+  }
+
+  async findSelectionnable(): Promise<Role[]> {
+    return this.roleRepository.find({ where: { selectionnable: true } });
+  }
+  
+  async findOne(id: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({ where: { id } });
+    if (!role) {
+      throw new NotFoundException(`Role avec l'id ${id} introuvable`);
+    }
+    return role;
+  }
+
+  async create(dto: CreateRoleDto): Promise<Role> {
+    const role = RoleMapper.fromCreateDto(dto);
     return this.roleRepository.save(role);
+  }
+
+  async update(id: string, dto: UpdateRoleDto): Promise<Role> {
+    const existingRole = await this.roleRepository.findOne({ where: { id } });
+    if (!existingRole) {
+      throw new NotFoundException(`Role avec l'id ${id} introuvable`);
+    }
+
+    const updatedRole = RoleMapper.fromUpdateDto(dto, existingRole);
+    return this.roleRepository.save(updatedRole);
+  }
+
+  async remove(id: string): Promise<void> {
+    const role = await this.roleRepository.findOne({ where: { id } });
+    if (!role) {
+      throw new NotFoundException(`Role avec l'id ${id} introuvable`);
+    }
+    await this.roleRepository.remove(role);
   }
 }
