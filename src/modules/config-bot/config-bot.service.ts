@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigBot } from './config-bot.entity';
@@ -24,8 +24,14 @@ export class ConfigBotService implements IConfigBotService {
   }
 
   async update(configId: number, updateData: Partial<ConfigBot>): Promise<ConfigBot | null> {
-    await this.configBotRepo.update(configId, updateData);
-    return this.findOne(configId);
+    const existingConfig = await this.configBotRepo.findOne({ where: { configId } });
+    
+    if (!existingConfig) {
+      throw new NotFoundException(`ConfigBot with id ${configId} not found`);
+    }
+
+    const updated = this.configBotRepo.merge(existingConfig, updateData);
+    return this.configBotRepo.save(updated);
   }
 
   async delete(configId: number): Promise<void> {

@@ -55,9 +55,9 @@ export class ConfigBot {
 
     
     // Date logging
-    @CreateDateColumn({ name: 'date_creation_campus', type: 'timestamptz' })
+    @CreateDateColumn({ name: 'date_creation_config ', type: 'timestamptz' })
     dateCreation: Date;
 
-    @UpdateDateColumn({ name: 'date_modification_campus', type: 'timestamptz' })
+    @UpdateDateColumn({ name: 'date_modification_config ', type: 'timestamptz' })
     dateModification: Date;
 }
