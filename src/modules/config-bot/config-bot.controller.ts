@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
-import { ConfigBotService } from './config-bot.service';
+import { Controller, Get, Post, Put, Delete, Body, Param, Inject } from '@nestjs/common';
+import { IConfigBotServiceToken } from './config-bot.constants';
+import { IConfigBotService } from './interface/IConfigBotService';
 import { ConfigBotDto } from './dto/config-bot.dto';
 import { ConfigBotMapper } from './config-bot.mapper';
 
 @Controller('config-bot')
 export class ConfigBotController {
-  constructor(private readonly configBotService: ConfigBotService) {}
+  constructor(@Inject(IConfigBotServiceToken)
+    private readonly configBotService: IConfigBotService,) {}
 
   @Get()
   async findAll() {
