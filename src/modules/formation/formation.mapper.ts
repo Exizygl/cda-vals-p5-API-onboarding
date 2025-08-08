@@ -1,23 +1,23 @@
-import { FormationDto } from './dto/formation.dto';
 import { Formation } from './formation.entity';
-
-
+import { CreateFormationDto } from './dto/createFormation.dto';
+import { UpdateFormationDto } from './dto/updateFormation.dto';
 
 export class FormationMapper {
-  static toEntity(dto: FormationDto): Formation {
+  static fromCreateDto(dto: CreateFormationDto): Formation {
     const formation = new Formation();
-    formation.id = dto.id
+    formation.id = dto.id;
     formation.nom = dto.nom;
-    formation.actif= dto.actif;
-
+    formation.actif = dto.actif;
     return formation;
   }
 
-  static toPublic(entity: Formation) {
-    return {
-      id: entity.id,
-      nom: entity.nom,
-      actif: entity.actif
-    };
+  static fromUpdateDto(dto: UpdateFormationDto, existingFormation: Formation): Formation {
+    if (dto.nom !== undefined) {
+      existingFormation.nom = dto.nom;
+    }
+    if (dto.selectionnable !== undefined) {
+      existingFormation.actif = dto.selectionnable;
+    }
+    return existingFormation;
   }
 }

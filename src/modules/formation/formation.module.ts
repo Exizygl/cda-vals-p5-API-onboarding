@@ -1,12 +1,19 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { FormationService } from './formation.service';
 import { FormationController } from './formation.controller';
-import { Formation } from './formation.entity'
+import { FormationService } from './formation.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Formation } from './formation.entity';
+import { IFormationServiceToken } from './formation.constants';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Formation])],
-  providers: [FormationService],
+  providers: [
+    {
+      provide: IFormationServiceToken,
+      useClass: FormationService,
+    },
+  ],
+  exports: [IFormationServiceToken],
   controllers: [FormationController]
 })
 export class FormationModule {}
