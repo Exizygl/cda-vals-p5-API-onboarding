@@ -6,6 +6,7 @@ import { IRoleServiceToken } from '../role/role.constants';
 import { Utilisateur } from './utilisateur.entity'; 
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { delay } from 'rxjs';
 
 describe('UtilisateurService (Integration)', () => {
   let moduleRef: TestingModule;
@@ -55,4 +56,39 @@ describe('UtilisateurService (Integration)', () => {
     expect(user.id).toEqual(dto.id);
     expect(user.roles?.[0]?.id).toEqual(savedRole.id);
   });
+
+  it('should update only the nom of an existing user', async () => {
+  const roleService = moduleRef.get(IRoleServiceToken);
+
+  // 1. Create a role
+  const role = new Role();
+  role.id = '1113002409883602974';
+  role.nom = 'Admin';
+  role.selectionnable = false;
+  const savedRole = await roleService.create(role);
+
+  // 2. Create a user
+  const createDto = {
+    id: '111300240988360287',
+    nom: 'Dou',
+    prenom: 'Jona',
+    rolesId: [savedRole.id],
+  };
+  const createdUser = await service.create(createDto);
+  
+  // 3. Update only the `nom`
+  const updateDto = { nom: 'UpdatedName' };
+  const updatedUser = await service.update(createdUser.id, updateDto);
+
+  // 4. Fetch from DB to ensure persistence
+  const userInDb = await utilisateurRepository.findOne({
+    where: { id: createdUser.id },
+  });
+
+  // 5. Assertions
+  expect(updatedUser.nom).toBe('UpdatedName');
+  expect(updatedUser.prenom).toBe('Jona'); // unchanged
+  expect(userInDb?.nom).toBe('UpdatedName');
+  expect(userInDb?.prenom).toBe('Jona');
+});
 });
