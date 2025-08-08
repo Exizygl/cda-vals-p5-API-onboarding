@@ -7,22 +7,25 @@ describe('UtilisateurController', () => {
   let controller: UtilisateurController;
   let service: UtilisateurService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [UtilisateurController],
-      providers: [
-        {
-          provide: UtilisateurService,
-          useValue: {
-            create: jest.fn(), 
-          },
+beforeEach(async () => {
+  const module: TestingModule = await Test.createTestingModule({
+    controllers: [UtilisateurController],
+    providers: [
+      {
+        provide: 'IUtilisateurService',   
+        useValue: {
+          create: jest.fn(),
+          update: jest.fn(),
+          addRoles: jest.fn(),
+          removeRoles: jest.fn(),
         },
-      ],
-    }).compile();
+      },
+    ],
+  }).compile();
 
-    controller = module.get<UtilisateurController>(UtilisateurController);
-    service = module.get<UtilisateurService>(UtilisateurService);
-  });
+  controller = module.get<UtilisateurController>(UtilisateurController);
+  service = module.get('IUtilisateurService');
+});
 
   it('should be defined', () => {
     expect(controller).toBeDefined();

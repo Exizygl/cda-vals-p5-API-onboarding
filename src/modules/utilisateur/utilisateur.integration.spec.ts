@@ -7,6 +7,8 @@ import { Utilisateur } from './utilisateur.entity';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { delay } from 'rxjs';
+import { UtilisateurModule } from './utilisateur.module';
+import { IUtilisateurServiceToken } from './Utilisateur.constant';
 
 describe('UtilisateurService (Integration)', () => {
   let moduleRef: TestingModule;
@@ -19,7 +21,7 @@ describe('UtilisateurService (Integration)', () => {
       imports: [TestAppModule],
     }).compile();
 
-    service = moduleRef.get(UtilisateurService);
+     service = moduleRef.get(IUtilisateurServiceToken);
     utilisateurRepository = moduleRef.get<Repository<Utilisateur>>(getRepositoryToken(Utilisateur));
     roleRepository = moduleRef.get<Repository<Role>>(getRepositoryToken(Role));
   });
