@@ -41,7 +41,6 @@ describe('RoleController', () => {
     }).compile();
 
     controller = module.get<RoleController>(RoleController);
-    // On récupère bien avec le token, sans string
     roleServiceMock = module.get(IRoleServiceToken);
   });
 
