@@ -1,93 +1,95 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RoleController } from './role.controller';
-import { IRoleService } from './interface/IRoleService';
-import { CreateRoleDto } from './dto/createRole.dto';
-import { UpdateRoleDto } from './dto/updateRole.dto';
-import { Role } from './role.entity';
+import { FormationController } from './formation.controller';
+import { IFormationService } from './interface/IFormationService';
+import { CreateFormationDto } from './dto/createFormation.dto';
+import { UpdateFormationDto } from './dto/updateFormation.dto';
+import { Formation } from './formation.entity';
+import { IFormationServiceToken } from './formation.constants';
 
-describe('RoleController', () => {
-  let controller: RoleController;
-  let service: jest.Mocked<IRoleService>;
+describe('FormationController', () => {
+  let controller: FormationController;
+  let formationServiceMock: jest.Mocked<IFormationService>;
 
-  const mockRole: Role = {
+  const mockFormation: Formation = {
     id: '1',
     nom: 'Admin',
-    selectionnable: true,
+    actif: true,
     dateCreation: new Date(),
     dateModification: new Date(),
-    utilisateurs: [],
   };
 
   beforeEach(async () => {
+    formationServiceMock = {
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      remove: jest.fn(),
+      findByIds: jest.fn(),
+      findActif: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [RoleController],
+      controllers: [FormationController],
       providers: [
         {
-          provide: 'IRoleServiceToken',
-          useValue: {
-            findAll: jest.fn(),
-            findOne: jest.fn(),
-            create: jest.fn(),
-            update: jest.fn(),
-            remove: jest.fn(),
-            findByIds: jest.fn(),
-            findSelectionnable: jest.fn(),
-          },
+          provide: IFormationServiceToken,
+          useValue: formationServiceMock,
         },
       ],
     }).compile();
 
-    controller = module.get<RoleController>(RoleController);
-    service = module.get('IRoleServiceToken');
+    controller = module.get<FormationController>(FormationController);
+    formationServiceMock = module.get(IFormationServiceToken);
   });
 
-  it('should return all roles', async () => {
-    service.findAll.mockResolvedValue([mockRole]);
+  it('should return all formations', async () => {
+    formationServiceMock.findAll.mockResolvedValue([mockFormation]);
     const result = await controller.findAll();
-    expect(result).toEqual([mockRole]);
-    expect(service.findAll).toHaveBeenCalled();
+    expect(result).toEqual([mockFormation]);
+    expect(formationServiceMock.findAll).toHaveBeenCalled();
   });
 
-  it('should return a role by id', async () => {
-    service.findOne.mockResolvedValue(mockRole);
+  it('should return a formation by id', async () => {
+    formationServiceMock.findOne.mockResolvedValue(mockFormation);
     const result = await controller.findOne('1');
-    expect(result).toEqual(mockRole);
-    expect(service.findOne).toHaveBeenCalledWith('1');
+    expect(result).toEqual(mockFormation);
+    expect(formationServiceMock.findOne).toHaveBeenCalledWith('1');
   });
 
-  it('should create a role', async () => {
-    const dto: CreateRoleDto = {
+  it('should create a formation', async () => {
+    const dto: CreateFormationDto = {
       id: '1',
       nom: 'Admin',
-      selectionnable: true,
+      actif: true,
     };
-    service.create.mockResolvedValue(mockRole);
+    formationServiceMock.create.mockResolvedValue(mockFormation);
     const result = await controller.create(dto);
-    expect(result).toEqual(mockRole);
-    expect(service.create).toHaveBeenCalledWith(dto);
+    expect(result).toEqual(mockFormation);
+    expect(formationServiceMock.create).toHaveBeenCalledWith(dto);
   });
 
-  it('should update a role', async () => {
-    const dto: UpdateRoleDto = {
+  it('should update a formation', async () => {
+    const dto: UpdateFormationDto = {
       nom: 'User',
     };
-    service.update.mockResolvedValue({ ...mockRole, nom: 'User' });
+    formationServiceMock.update.mockResolvedValue({ ...mockFormation, nom: 'User' });
     const result = await controller.update('1', dto);
     expect(result.nom).toBe('User');
-    expect(service.update).toHaveBeenCalledWith('1', dto);
+    expect(formationServiceMock.update).toHaveBeenCalledWith('1', dto);
   });
 
-  it('should remove a role', async () => {
-    service.remove.mockResolvedValue(undefined);
+  it('should remove a formation', async () => {
+    formationServiceMock.remove.mockResolvedValue(undefined);
     const result = await controller.remove('1');
-    expect(result).toEqual({ message: 'Role deleted successfully' });
-    expect(service.remove).toHaveBeenCalledWith('1');
+    expect(result).toEqual({ message: 'Formation deleted successfully' });
+    expect(formationServiceMock.remove).toHaveBeenCalledWith('1');
   });
 
-  it('should return only selectionnable roles', async () => {
-    service.findSelectionnable.mockResolvedValue([mockRole]);
-    const result = await controller.findSelectionnable();
-    expect(result).toEqual([mockRole]);
-    expect(service.findSelectionnable).toHaveBeenCalled();
+  it('should return only actif formations', async () => {
+    formationServiceMock.findActif.mockResolvedValue([mockFormation]);
+    const result = await controller.findActif();
+    expect(result).toEqual([mockFormation]);
+    expect(formationServiceMock.findActif).toHaveBeenCalled();
   });
 });
