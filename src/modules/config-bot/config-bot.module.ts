@@ -9,4 +9,4 @@ import { ConfigBot } from './config-bot.entity';
   providers: [ConfigBotService],
   controllers: [ConfigBotController]
 })
-export class StatutIdentificationModule {}
+export class ConfigBotModule {}

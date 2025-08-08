@@ -1,4 +1,3 @@
-import { ConfigBotService } from '../config-bot.service';
 import { ConfigBot } from '../config-bot.entity';
 
 export interface IConfigBotService {
