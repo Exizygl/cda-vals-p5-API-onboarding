@@ -9,7 +9,7 @@ import { IdentificationModule } from './modules/identification/identification.mo
 import { FormationModule } from './modules/formation/formation.module';
 import { CampusModule } from './modules/campus/campus.module';
 import { StatutPromoModule } from './modules/statut-promo/statut-promo.module';
-import { StatutIdentificationModule } from './modules/statut-identification/statut-identification.module';
+import { StatutIdentificationModule } from './modules/statut-identification/statutIdentification.module';
 import { PromoModule } from './modules/promo/promo.module';
 
 @Module({

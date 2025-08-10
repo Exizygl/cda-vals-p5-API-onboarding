@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { StatutIdentification } from '../statut-identification/statut-identification.entity';
+import { StatutIdentification } from '../statut-identification/statutIdentification.entity';
 import { Promo } from '../promo/promo.entity';
 import { Utilisateur } from '../utilisateur/utilisateur.entity';
 import { Exclude } from 'class-transformer';
