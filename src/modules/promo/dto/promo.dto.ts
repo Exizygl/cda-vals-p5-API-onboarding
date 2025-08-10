@@ -1,5 +1,5 @@
 import { Identification } from "src/modules/identification/identification.entity";
-import { StatutPromo } from "src/modules/statut-promo/statut-promo.entity";
+import { StatutPromo } from "src/modules/statut-promo/statutPromo.entity";
 
 
 
