@@ -8,7 +8,7 @@ import { RoleModule } from './modules/role/role.module';
 import { IdentificationModule } from './modules/identification/identification.module';
 import { FormationModule } from './modules/formation/formation.module';
 import { CampusModule } from './modules/campus/campus.module';
-import { StatutPromoModule } from './modules/statut-promo/statut-promo.module';
+import { StatutPromoModule } from './modules/statut-promo/statutPromo.module';
 import { StatutIdentificationModule } from './modules/statut-identification/statut-identification.module';
 import { PromoModule } from './modules/promo/promo.module';
 
