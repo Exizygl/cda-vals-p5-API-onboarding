@@ -26,10 +26,10 @@ export class IdentificationService implements IIdentificationService {
   ) {}
 
   async create(dto: CreateIdentificationDto): Promise<Identification> {
-    const statut = await this.statutIdentificationRepository.findOneBy({ id: dto.statutIdentificationId });
-    if (!statut) {
-      throw new NotFoundException(`StatutIdentification with id ${dto.statutIdentificationId} not found`);
-    }
+    const statut = await this.statutIdentificationRepository.findOneBy({ libelle: 'En attente' });
+  if (!statut) {
+    throw new NotFoundException(`StatutIdentification with libelle 'En attente' not found`);
+  }
 
     const promo = await this.promoRepository.findOneBy({ id: dto.promoId });
     if (!promo) {
@@ -75,13 +75,6 @@ export class IdentificationService implements IIdentificationService {
       identification.statutidentification = statut;
     }
 
-    identification.dateModification = new Date();
-
     return this.identificationRepository.save(identification);
-  }
-
-  async delete(id: string): Promise<void> {
-    const identification = await this.findById(id);
-    await this.identificationRepository.remove(identification);
   }
 }
