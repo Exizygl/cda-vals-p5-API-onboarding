@@ -74,7 +74,7 @@ describe('StatutPromoService', () => {
 
 describe('create', () => {
   it('should create and return a statutPromo', async () => {
-    const dto: CreateStatutPromoDto = { id: '1', libelle: 'Admin'};
+    const dto: CreateStatutPromoDto = { libelle: 'Admin'};
     const mappedStatutPromo = { ...dto } as StatutPromo;
 
     jest.spyOn(StatutPromoMapper, 'fromCreateDto').mockReturnValue(mappedStatutPromo);

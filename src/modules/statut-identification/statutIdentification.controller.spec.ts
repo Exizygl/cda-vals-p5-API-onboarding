@@ -57,7 +57,6 @@ describe('StatutIdentificationController', () => {
 
   it('should create a statutIdentification', async () => {
     const dto: CreateStatutIdentificationDto = {
-      id: '1',
       libelle: 'Admin',
     };
     statutIdentificationServiceMock.create.mockResolvedValue(mockStatutIdentification);
