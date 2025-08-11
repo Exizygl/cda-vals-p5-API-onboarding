@@ -1,7 +1,7 @@
 import { Identification } from "src/modules/identification/identification.entity";
 import { Role } from "src/modules/role/role.entity";
 import { IsString, Matches, IsNotEmpty, Length, IsArray, ValidateNested,  IsOptional} from 'class-validator';
-import { IdentificationDto } from "src/modules/identification/dto/identification.dto";
+import { IdentificationDto } from "src/modules/identification/dto/createIdentification.dto";
 import { Type } from "class-transformer";
 
 export class CreateUtilisateurDto {
