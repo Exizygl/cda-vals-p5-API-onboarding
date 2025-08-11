@@ -6,7 +6,7 @@ import {
   JoinColumn,
   OneToMany
 } from 'typeorm';
-import { StatutPromo } from '../statut-promo/statut-promo.entity';
+import { StatutPromo } from '../statut-promo/statutPromo.entity';
 import { Formation } from '../formation/formation.entity';
 import { Campus } from '../campus/campus.entity';
 import { Identification } from '../identification/identification.entity';
