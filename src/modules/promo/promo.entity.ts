@@ -4,7 +4,9 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  OneToMany
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { StatutPromo } from '../statut-promo/statutPromo.entity';
 import { Formation } from '../formation/formation.entity';
@@ -25,13 +27,13 @@ export class Promo {
   @Column({ name: 'date_fin_promo', type: 'date' })
   dateFin: Date;
 
-  @Column({ name: 'snowflake_promo', type: 'bigint', nullable: true })
+  @Column({ name: 'snowflake_promo', type: 'bigint', nullable: true,  unique: true})
   snowflake: string;
 
-  @Column({ name: 'date_creation_promo', type: 'timestamptz' })
+  @CreateDateColumn({ name: 'date_creation_promo', type: 'timestamptz' })
   dateCreation: Date;
 
-  @Column({ name: 'date_modification_promo', type: 'timestamptz', nullable: true })
+  @UpdateDateColumn({ name: 'date_modification_promo', type: 'timestamptz', nullable: true })
   dateModification: Date;
 
   @ManyToOne(() => StatutPromo)
