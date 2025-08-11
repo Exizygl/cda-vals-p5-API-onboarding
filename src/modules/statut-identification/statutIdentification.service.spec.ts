@@ -74,7 +74,7 @@ describe('StatutIdentificationService', () => {
 
 describe('create', () => {
   it('should create and return a statutIdentification', async () => {
-    const dto: CreateStatutIdentificationDto = { id: '1', libelle: 'Admin'};
+    const dto: CreateStatutIdentificationDto = { libelle: 'Admin'};
     const mappedStatutIdentification = { ...dto } as StatutIdentification;
 
     jest.spyOn(StatutIdentificationMapper, 'fromCreateDto').mockReturnValue(mappedStatutIdentification);

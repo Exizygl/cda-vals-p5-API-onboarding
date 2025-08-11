@@ -5,7 +5,6 @@ import { UpdateStatutIdentificationDto } from './dto/updateStatutIdentification.
 export class StatutIdentificationMapper {
   static fromCreateDto(dto: CreateStatutIdentificationDto): StatutIdentification {
     const statutIdentification = new StatutIdentification();
-    statutIdentification.id = dto.id;
     statutIdentification.libelle = dto.libelle;
     return statutIdentification;
   }

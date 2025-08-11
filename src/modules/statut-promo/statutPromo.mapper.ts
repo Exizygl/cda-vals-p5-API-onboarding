@@ -5,7 +5,6 @@ import { UpdateStatutPromoDto } from './dto/updateStatutPromo.dto';
 export class StatutPromoMapper {
   static fromCreateDto(dto: CreateStatutPromoDto): StatutPromo {
     const statutPromo = new StatutPromo();
-    statutPromo.id = dto.id;
     statutPromo.libelle = dto.libelle;
     return statutPromo;
   }

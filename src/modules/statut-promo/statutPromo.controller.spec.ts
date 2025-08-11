@@ -57,7 +57,6 @@ describe('StatutPromoController', () => {
 
   it('should create a statutPromo', async () => {
     const dto: CreateStatutPromoDto = {
-      id: '1',
       libelle: 'Admin',
     };
     statutPromoServiceMock.create.mockResolvedValue(mockStatutPromo);
