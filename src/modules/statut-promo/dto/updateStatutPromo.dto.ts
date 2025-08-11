@@ -1,7 +1,6 @@
 import { IsString, Matches, IsNotEmpty, Length, IsBoolean} from 'class-validator';
 
 export class UpdateStatutPromoDto {
-
   @IsString()
   @IsNotEmpty()
   @Length(1, 50)
