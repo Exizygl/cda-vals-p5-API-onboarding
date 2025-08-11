@@ -10,9 +10,9 @@ export class StatutIdentification {
   libelle: string;
 
   @CreateDateColumn({ name: 'date_creation_statut_identification', type: 'timestamptz' })
-  createdAt: Date;
+  dateCreation: Date;
 
   @UpdateDateColumn({ name: 'date_modification_statut_identification', type: 'timestamptz' })
-  updatedAt: Date;
+  dateModification: Date;
 
 }

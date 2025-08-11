@@ -9,8 +9,8 @@ import { RoleModule } from './modules/role/role.module';
 import { IdentificationModule } from './modules/identification/identification.module';
 import { FormationModule } from './modules/formation/formation.module';
 import { CampusModule } from './modules/campus/campus.module';
+import { StatutIdentificationModule } from './modules/statut-identification/statutIdentification.module';
 import { StatutPromoModule } from './modules/statut-promo/statutPromo.module';
-import { StatutIdentificationModule } from './modules/statut-identification/statut-identification.module';
 import { PromoModule } from './modules/promo/promo.module';
 import { ConfigBotModule } from './modules/config-bot/config-bot.module';
 
