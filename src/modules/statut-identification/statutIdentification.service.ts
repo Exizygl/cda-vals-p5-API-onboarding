@@ -14,7 +14,7 @@ export class StatutIdentificationService implements IStatutIdentificationService
     private readonly statutIdentificationRepository: Repository<StatutIdentification>,
   ) {}
 
-  async findByIds(ids: string[]): Promise<StatutIdentification[]> {
+  async findByIds(ids: number[]): Promise<StatutIdentification[]> {
     return this.statutIdentificationRepository.find({ where: { id: In(ids) } });
   }
 
@@ -22,7 +22,7 @@ export class StatutIdentificationService implements IStatutIdentificationService
     return this.statutIdentificationRepository.find();
   }
  
-  async findOne(id: string): Promise<StatutIdentification> {
+  async findOne(id: number): Promise<StatutIdentification> {
     const statutIdentification = await this.statutIdentificationRepository.findOne({ where: { id } });
     if (!statutIdentification) {
       throw new NotFoundException(`StatutIdentification avec l'id ${id} introuvable`);
@@ -35,7 +35,7 @@ export class StatutIdentificationService implements IStatutIdentificationService
     return this.statutIdentificationRepository.save(statutIdentification);
   }
 
-  async update(id: string, dto: UpdateStatutIdentificationDto): Promise<StatutIdentification> {
+  async update(id: number, dto: UpdateStatutIdentificationDto): Promise<StatutIdentification> {
     const existingStatutIdentification = await this.statutIdentificationRepository.findOne({ where: { id } });
     if (!existingStatutIdentification) {
       throw new NotFoundException(`StatutIdentification avec l'id ${id} introuvable`);
@@ -45,7 +45,7 @@ export class StatutIdentificationService implements IStatutIdentificationService
     return this.statutIdentificationRepository.save(updatedStatutIdentification);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const statutIdentification = await this.statutIdentificationRepository.findOne({ where: { id } });
     if (!statutIdentification) {
       throw new NotFoundException(`StatutIdentification avec l'id ${id} introuvable`);

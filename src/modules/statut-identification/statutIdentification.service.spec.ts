@@ -36,10 +36,10 @@ describe('StatutIdentificationService', () => {
 
   describe('findByIds', () => {
     it('should return statutIdentifications by ids', async () => {
-      const statutIdentifications = [{ id: '1' } as StatutIdentification, { id: '2' } as StatutIdentification];
+      const statutIdentifications = [{ id: 1 } as StatutIdentification, { id: 2 } as StatutIdentification];
       repository.find.mockResolvedValue(statutIdentifications);
 
-      const result = await service.findByIds(['1', '2']);
+      const result = await service.findByIds([1, 2]);
       expect(repository.find).toHaveBeenCalledWith({ where: { id: expect.any(Object) } });
       expect(result).toEqual(statutIdentifications);
     });
@@ -47,7 +47,7 @@ describe('StatutIdentificationService', () => {
 
   describe('findAll', () => {
     it('should return all statutIdentifications', async () => {
-      const statutIdentifications = [{ id: '1' } as StatutIdentification];
+      const statutIdentifications = [{ id: 1 } as StatutIdentification];
       repository.find.mockResolvedValue(statutIdentifications);
 
       const result = await service.findAll();
@@ -58,17 +58,17 @@ describe('StatutIdentificationService', () => {
 
   describe('findOne', () => {
     it('should return a statutIdentification if found', async () => {
-      const statutIdentification = { id: '1' } as StatutIdentification;
+      const statutIdentification = { id: 1 } as StatutIdentification;
       repository.findOne.mockResolvedValue(statutIdentification);
 
-      const result = await service.findOne('1');
+      const result = await service.findOne(1);
       expect(result).toEqual(statutIdentification);
     });
 
     it('should throw NotFoundException if not found', async () => {
       repository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne('99')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(99)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -89,16 +89,16 @@ describe('create', () => {
 
   describe('update', () => {
     it('should update and return the statutIdentification', async () => {
-      const existingStatutIdentification = { id: '1', libelle: 'User' } as StatutIdentification;
+      const existingStatutIdentification = { id: 1, libelle: 'User' } as StatutIdentification;
       const dto: UpdateStatutIdentificationDto = { libelle: 'Updated' };
-      const updatedStatutIdentification = { id: '1', libelle: 'Updated' } as StatutIdentification;
+      const updatedStatutIdentification = { id: 1, libelle: 'Updated' } as StatutIdentification;
 
       repository.findOne.mockResolvedValue(existingStatutIdentification);
       jest.spyOn(StatutIdentificationMapper, 'fromUpdateDto').mockReturnValue(updatedStatutIdentification);
       repository.save.mockResolvedValue(updatedStatutIdentification);
 
-      const result = await service.update('1', dto);
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { id: '1' } });
+      const result = await service.update(1, dto);
+      expect(repository.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
       expect(StatutIdentificationMapper.fromUpdateDto).toHaveBeenCalledWith(dto, existingStatutIdentification);
       expect(repository.save).toHaveBeenCalledWith(updatedStatutIdentification);
       expect(result).toEqual(updatedStatutIdentification);
@@ -106,24 +106,24 @@ describe('create', () => {
 
     it('should throw NotFoundException if statutIdentification not found', async () => {
       repository.findOne.mockResolvedValue(null);
-      await expect(service.update('99', { libelle: 'Updated' })).rejects.toThrow(NotFoundException);
+      await expect(service.update(99, { libelle: 'Updated' })).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('remove', () => {
     it('should remove the statutIdentification', async () => {
-      const statutIdentification = { id: '1' } as StatutIdentification;
+      const statutIdentification = { id: 1 } as StatutIdentification;
       repository.findOne.mockResolvedValue(statutIdentification);
       repository.remove.mockResolvedValue(statutIdentification);
 
-      await service.remove('1');
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { id: '1' } });
+      await service.remove(1);
+      expect(repository.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
       expect(repository.remove).toHaveBeenCalledWith(statutIdentification);
     });
 
     it('should throw NotFoundException if statutIdentification not found', async () => {
       repository.findOne.mockResolvedValue(null);
-      await expect(service.remove('99')).rejects.toThrow(NotFoundException);
+      await expect(service.remove(99)).rejects.toThrow(NotFoundException);
     });
   });
 });

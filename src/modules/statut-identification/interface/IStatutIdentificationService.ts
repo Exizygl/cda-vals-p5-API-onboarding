@@ -3,10 +3,10 @@ import { CreateStatutIdentificationDto } from '../dto/createStatutIdentification
 import { UpdateStatutIdentificationDto } from '../dto/updateStatutIdentification.dto';
 
 export interface IStatutIdentificationService {
-  findByIds(ids: string[]): Promise<StatutIdentification[]>;
+  findByIds(ids: number[]): Promise<StatutIdentification[]>;
   findAll(): Promise<StatutIdentification[]>;
-  findOne(id: string): Promise<StatutIdentification>;
+  findOne(id: number): Promise<StatutIdentification>;
   create(dto: CreateStatutIdentificationDto): Promise<StatutIdentification>;
-  update(id: string, dto: UpdateStatutIdentificationDto): Promise<StatutIdentification>;
-  remove(id: string): Promise<void>;
+  update(id: number, dto: UpdateStatutIdentificationDto): Promise<StatutIdentification>;
+  remove(id: number): Promise<void>;
 }
