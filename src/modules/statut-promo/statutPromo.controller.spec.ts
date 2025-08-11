@@ -11,7 +11,7 @@ describe('StatutPromoController', () => {
   let statutPromoServiceMock: jest.Mocked<IStatutPromoService>;
 
   const mockStatutPromo: StatutPromo = {
-    id: '1',
+    id: 1,
     libelle: 'Admin',
     dateCreation: new Date(),
     dateModification: new Date(),
@@ -50,7 +50,7 @@ describe('StatutPromoController', () => {
 
   it('should return a statutPromo by id', async () => {
     statutPromoServiceMock.findOne.mockResolvedValue(mockStatutPromo);
-    const result = await controller.findOne('1');
+    const result = await controller.findOne(1);
     expect(result).toEqual(mockStatutPromo);
     expect(statutPromoServiceMock.findOne).toHaveBeenCalledWith('1');
   });
@@ -70,14 +70,14 @@ describe('StatutPromoController', () => {
       libelle: 'User',
     };
     statutPromoServiceMock.update.mockResolvedValue({ ...mockStatutPromo, libelle: 'User' });
-    const result = await controller.update('1', dto);
+    const result = await controller.update(1, dto);
     expect(result.libelle).toBe('User');
     expect(statutPromoServiceMock.update).toHaveBeenCalledWith('1', dto);
   });
 
   it('should remove a statutPromo', async () => {
     statutPromoServiceMock.remove.mockResolvedValue(undefined);
-    const result = await controller.remove('1');
+    const result = await controller.remove(1);
     expect(result).toEqual({ message: 'statutPromo deleted successfully' });
     expect(statutPromoServiceMock.remove).toHaveBeenCalledWith('1');
   });

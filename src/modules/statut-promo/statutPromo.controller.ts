@@ -15,7 +15,7 @@ export class StatutPromoController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: number) {
     return this.formationService.findOne(id);
   }
 
@@ -25,12 +25,12 @@ export class StatutPromoController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateStatutPromoDto) {
+  async update(@Param('id') id: number, @Body() dto: UpdateStatutPromoDto) {
     return this.formationService.update(id, dto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: number) {
     await this.formationService.remove(id);
     return { message: 'statutPromo deleted successfully' };
   }
