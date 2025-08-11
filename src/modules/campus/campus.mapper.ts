@@ -1,21 +1,23 @@
-import { CampusDto } from './dto/campus.dto';
 import { Campus } from './campus.entity';
+import { CreateCampusDto } from './dto/createCampus.dto';
+import { UpdateCampusDto } from './dto/updateCampus.dto';
 
 export class CampusMapper {
-  static toEntity(dto: CampusDto): Campus {
+  static fromCreateDto(dto: CreateCampusDto): Campus {
     const campus = new Campus();
-    campus.id = dto.id
+    campus.id = dto.id;
     campus.nom = dto.nom;
-    campus.actif= dto.actif;
-
+    campus.actif = dto.actif;
     return campus;
   }
 
-  static toPublic(entity: Campus) {
-    return {
-      id: entity.id,
-      nom: entity.nom,
-      actif: entity.actif
-    };
+  static fromUpdateDto(dto: UpdateCampusDto, existingCampus: Campus): Campus {
+    if (dto.nom !== undefined) {
+      existingCampus.nom = dto.nom;
+    }
+    if (dto.selectionnable !== undefined) {
+      existingCampus.actif = dto.selectionnable;
+    }
+    return existingCampus;
   }
 }
