@@ -4,7 +4,7 @@ import { CreateStatutIdentificationDto } from './dto/createStatutIdentification.
 import { UpdateStatutIdentificationDto } from './dto/updateStatutIdentification.dto';
 import { IStatutIdentificationServiceToken } from './statutIdentification.constants';
 import { IStatutIdentificationService } from './interface/IStatutIdentificationService';
-@Controller('statut-promos')
+@Controller('statut-identification')
 export class StatutIdentificationController {
   constructor(@Inject(IStatutIdentificationServiceToken)
     private readonly formationService: IStatutIdentificationService,) {}
