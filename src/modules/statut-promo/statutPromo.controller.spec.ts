@@ -25,6 +25,7 @@ describe('StatutPromoController', () => {
       update: jest.fn(),
       remove: jest.fn(),
       findByIds: jest.fn(),
+      findByLibelle: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

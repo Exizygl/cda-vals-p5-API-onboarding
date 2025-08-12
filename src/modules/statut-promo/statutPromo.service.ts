@@ -1,11 +1,12 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Repository, In } from 'typeorm';
 import { StatutPromo } from './statutPromo.entity';
 import { IStatutPromoService } from './interface/IStatutPromoService';
 import { CreateStatutPromoDto } from './dto/createStatutPromo.dto';
 import { UpdateStatutPromoDto } from './dto/updateStatutPromo.dto';
 import { StatutPromoMapper } from './statutPromo.mapper';
+import { IStatutPromoServiceToken } from './statutPromo.constants';
 
 @Injectable()
 export class StatutPromoService implements IStatutPromoService {
@@ -51,5 +52,17 @@ export class StatutPromoService implements IStatutPromoService {
       throw new NotFoundException(`StatutPromo avec l'id ${id} introuvable`);
     }
     await this.statutPromoRepository.remove(statutPromo);
+  }
+
+   async findByLibelle(libelle: string): Promise<StatutPromo> {
+    const statut = await this.statutPromoRepository.findOne({
+      where: { libelle },
+    });
+
+       if (!statut) {
+      throw new NotFoundException(`Statut "${libelle}" not found`);
+    }
+
+    return statut;
   }
 }

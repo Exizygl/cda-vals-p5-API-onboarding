@@ -9,4 +9,5 @@ export interface IStatutPromoService {
   create(dto: CreateStatutPromoDto): Promise<StatutPromo>;
   update(id: number, dto: UpdateStatutPromoDto): Promise<StatutPromo>;
   remove(id: number): Promise<void>;
+  findByLibelle(libelle: string): Promise<StatutPromo> ;
 }
