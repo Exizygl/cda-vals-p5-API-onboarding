@@ -17,22 +17,29 @@ export class Identification {
   @PrimaryGeneratedColumn('uuid', { name: 'id_identification' })
   id: string;
 
-  @CreateDateColumn({ name: 'date_creation_identification', type: 'timestamptz' })
+  @CreateDateColumn({
+    name: 'date_creation_identification',
+    type: 'timestamptz',
+  })
   dateCreation: Date;
 
-  @UpdateDateColumn({ name: 'date_modification_identification', type: 'timestamptz', nullable: true })
+  @UpdateDateColumn({
+    name: 'date_modification_identification',
+    type: 'timestamptz',
+    nullable: true,
+  })
   dateModification: Date;
 
   @ManyToOne(() => StatutIdentification)
   @JoinColumn({ name: 'id_statut_identification' })
   statutidentification: StatutIdentification;
 
-  @ManyToOne(() => Promo)
+  @ManyToOne(() => Promo, (promo) => promo.identifications)
   @JoinColumn({ name: 'id_promo' })
   @Exclude()
   promo: Promo;
 
-  @ManyToOne(() => Utilisateur)
+  @ManyToOne(() => Utilisateur, (utilisateur) => utilisateur.identifications)
   @JoinColumn({ name: 'id_utilisateur' })
   @Exclude()
   utilisateur: Utilisateur;
