@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IPromoService } from './interface/IPromoService';
 import { CreatePromoDto } from './dto/createPromo.dto';
 import { UpdatePromoDto } from './dto/updatePromo.dto';
@@ -6,12 +6,18 @@ import { Promo } from './promo.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { PromoMapper } from './promo.mapper';
+import { IStatutPromoServiceToken } from '../statut-promo/statutPromo.constants';
+import { IStatutPromoService }from '../statut-promo/interface/IStatutPromoService';
 
 @Injectable()
 export class PromoService implements IPromoService {
   constructor(
     @InjectRepository(Promo)
     private readonly promoRepository: Repository<Promo>,
+
+    @Inject(IStatutPromoServiceToken)
+    private readonly StatutPromoService: IStatutPromoService,
+    
   ) {}
 
   findByIds(ids: string[]): Promise<Promo[]> {
@@ -54,58 +60,61 @@ export class PromoService implements IPromoService {
     return promo;
   }
 
+  async findPromoToStart(): Promise<Promo[] | null> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-async findPromoToStart(): Promise<Promo | null> {
-  const today = new Date();
-  
-  today.setHours(0, 0, 0, 0);
+    const promos = await this.promoRepository
+      .createQueryBuilder('promo')
+      .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
+      .leftJoinAndSelect('promo.identifications', 'identification')
+      .leftJoinAndSelect(
+        'identification.statutidentification',
+        'statutIdentification',
+      )
+      .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
+      .leftJoinAndSelect('utilisateur.roles', 'role')
+      .where('statutPromo.libelle = :promoLibelle', {
+        promoLibelle: 'En attente',
+      })
+      .andWhere('promo.dateDebut <= :today', { today })
+      .andWhere('statutIdentification.libelle = :statutLibelle', {
+        statutLibelle: 'Accepté',
+      })
+      .orderBy('promo.dateDebut', 'ASC')
+      .getMany();
 
-  const promo = await this.promoRepository
-    .createQueryBuilder('promo')
-    .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
-    .where('statutPromo.libelle = :libelle', { libelle: 'En attente' })
-    .andWhere('promo.dateDebut <= :today', { today })
-    .orderBy('promo.dateDebut', 'ASC') 
-    .getOne();
-
-  return promo || null;
-}
-
-async findPromoToArchive(): Promise<Promo | null> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  
-  const oneMonthAgo = new Date(today);
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-  const promo = await this.promoRepository
-    .createQueryBuilder('promo')
-    .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
-    .where('statutPromo.libelle = :libelle', { libelle: 'Actif' })
-    .andWhere('promo.dateFin <= :oneMonthAgo', { oneMonthAgo })
-    .orderBy('promo.dateFin', 'ASC')
-    .getOne();
-
-  return promo || null;
-}
-
-async create(dto: CreatePromoDto): Promise<Promo> {
-
-  const statutEnAttente = await this.statutPromoRepository.findOne({
-    where: { libelle: 'En attente' },
-  });
-
-  if (!statutEnAttente) {
-    throw new Error('Statut "En attente" not found');
+    return promos.length > 0 ? promos : null;
   }
 
+async findPromoToArchive(): Promise<Promo[] | null> {
+  const promos = await this.promoRepository
+    .createQueryBuilder('promo')
+    .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
+    .leftJoinAndSelect('promo.identifications', 'identification')
+    .leftJoinAndSelect('identification.statutidentification', 'statutIdentification')
+    .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
+    .leftJoinAndSelect('utilisateur.roles', 'role')
+    .where('statutPromo.libelle = :promoLibelle', { promoLibelle: 'Archivé' })
+    .andWhere('statutIdentification.libelle = :statutLibelle', { statutLibelle: 'Accepté' })
+    .orderBy('promo.dateDebut', 'DESC')
+    .getMany(); 
 
-  const promo = PromoMapper.fromCreateDto(dto, statutEnAttente);
-
- 
-  return this.promoRepository.save(promo);
+  return promos.length > 0 ? promos : null;
 }
+
+  async create(dto: CreatePromoDto): Promise<Promo> {
+    const statutEnAttente =
+      await this.StatutPromoService.findByLibelle('En attente');
+
+    if (!statutEnAttente) {
+      throw new Error('Statut "En attente" not found');
+    }
+
+    const promo = PromoMapper.fromCreateDto(dto, statutEnAttente);
+
+    return this.promoRepository.save(promo);
+  }
 
   update(id: string, dto: UpdatePromoDto): Promise<Promo> {
     return this.promoRepository.save({ ...dto, id });
