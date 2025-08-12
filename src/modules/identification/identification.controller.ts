@@ -1,15 +1,16 @@
-import { Body, Controller, Param, Post, Put, Get} from '@nestjs/common';
+import { Body, Controller, Param, Post, Put, Get } from '@nestjs/common';
 import { CreateIdentificationDto } from './dto/createIdentification.dto';
 import { UpdateIdentificationDto } from './dto/updateIdentification.dto';
 import { Identification } from './identification.entity';
 import { IIdentificationService } from './interface/IIdentificationService';
 import { IdentificationMapper } from './identification.mapper';
 import { Inject } from '@nestjs/common';
+import { IIdentificationServiceToken } from './identification.constants';
 
 @Controller('identifications')
 export class IdentificationController {
   constructor(
-    @Inject('IIdentificationService')
+    @Inject(IIdentificationServiceToken)
     private readonly identificationService: IIdentificationService,
   ) {}
 

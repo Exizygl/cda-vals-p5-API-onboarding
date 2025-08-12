@@ -6,13 +6,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { StatutIdentification } from '../statut-identification/statutIdentification.entity';
 import { Promo } from '../promo/promo.entity';
 import { Utilisateur } from '../utilisateur/utilisateur.entity';
+import { IIdentificationServiceToken } from './identification.constants';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Identification,
-      StatutIdentification, // <- This is the one missing
+      StatutIdentification, 
       Promo,
       Utilisateur,])],
-  providers: [IdentificationService],
+  providers: [{
+      provide: IIdentificationServiceToken,
+      useClass: IdentificationService,
+    },],
+    exports: [IIdentificationServiceToken],
   controllers: [IdentificationController]
 })
 export class IdentificationModule {}
