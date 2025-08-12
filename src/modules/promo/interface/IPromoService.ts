@@ -9,8 +9,9 @@ export interface IPromoService {
     findActif(): Promise<Promo[]>;
     findOne(id: string): Promise<Promo>;
     findOneBySnowflake(snowflake: string): Promise<Promo>;
-    findPromoToStart(): Promise<Promo | null>;
-    findPromoToArchive(): Promise<Promo | null>;
+    findPromoToStart(): Promise<Promo[] | null>;
+    findPromoToArchive(): Promise<Promo[] | null>;
     create(dto: CreatePromoDto): Promise<Promo>;
     update(id: string, dto: UpdatePromoDto): Promise<Promo>;
+
 }
