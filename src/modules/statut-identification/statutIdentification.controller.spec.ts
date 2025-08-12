@@ -11,7 +11,7 @@ describe('StatutIdentificationController', () => {
   let statutIdentificationServiceMock: jest.Mocked<IStatutIdentificationService>;
 
   const mockStatutIdentification: StatutIdentification = {
-    id: '1',
+    id: 1,
     libelle: 'Admin',
     dateCreation: new Date(),
     dateModification: new Date(),
@@ -50,9 +50,9 @@ describe('StatutIdentificationController', () => {
 
   it('should return a statutIdentification by id', async () => {
     statutIdentificationServiceMock.findOne.mockResolvedValue(mockStatutIdentification);
-    const result = await controller.findOne('1');
+    const result = await controller.findOne(1);
     expect(result).toEqual(mockStatutIdentification);
-    expect(statutIdentificationServiceMock.findOne).toHaveBeenCalledWith('1');
+    expect(statutIdentificationServiceMock.findOne).toHaveBeenCalledWith(1);
   });
 
   it('should create a statutIdentification', async () => {
@@ -70,15 +70,15 @@ describe('StatutIdentificationController', () => {
       libelle: 'User',
     };
     statutIdentificationServiceMock.update.mockResolvedValue({ ...mockStatutIdentification, libelle: 'User' });
-    const result = await controller.update('1', dto);
+    const result = await controller.update(1, dto);
     expect(result.libelle).toBe('User');
-    expect(statutIdentificationServiceMock.update).toHaveBeenCalledWith('1', dto);
+    expect(statutIdentificationServiceMock.update).toHaveBeenCalledWith(1, dto);
   });
 
   it('should remove a statutIdentification', async () => {
     statutIdentificationServiceMock.remove.mockResolvedValue(undefined);
-    const result = await controller.remove('1');
+    const result = await controller.remove(1);
     expect(result).toEqual({ message: 'statutIdentification deleted successfully' });
-    expect(statutIdentificationServiceMock.remove).toHaveBeenCalledWith('1');
+    expect(statutIdentificationServiceMock.remove).toHaveBeenCalledWith(1);
   });
 });

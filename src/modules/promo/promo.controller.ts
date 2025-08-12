@@ -12,6 +12,7 @@ export class PromoController {
     private readonly promoService: IPromoService,
   ) {}
 
+  
   @Get()
   async findAll(): Promise<Promo[]> {
     return this.promoService.findAll();
@@ -42,8 +43,4 @@ export class PromoController {
     return this.promoService.update(id, dto);
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.promoService.remove(id);
-  }
 }

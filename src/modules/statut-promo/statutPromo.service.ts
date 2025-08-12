@@ -14,7 +14,7 @@ export class StatutPromoService implements IStatutPromoService {
     private readonly statutPromoRepository: Repository<StatutPromo>,
   ) {}
 
-  async findByIds(ids: string[]): Promise<StatutPromo[]> {
+  async findByIds(ids: number[]): Promise<StatutPromo[]> {
     return this.statutPromoRepository.find({ where: { id: In(ids) } });
   }
 
@@ -22,7 +22,7 @@ export class StatutPromoService implements IStatutPromoService {
     return this.statutPromoRepository.find();
   }
  
-  async findOne(id: string): Promise<StatutPromo> {
+  async findOne(id: number): Promise<StatutPromo> {
     const statutPromo = await this.statutPromoRepository.findOne({ where: { id } });
     if (!statutPromo) {
       throw new NotFoundException(`StatutPromo avec l'id ${id} introuvable`);
@@ -35,7 +35,7 @@ export class StatutPromoService implements IStatutPromoService {
     return this.statutPromoRepository.save(statutPromo);
   }
 
-  async update(id: string, dto: UpdateStatutPromoDto): Promise<StatutPromo> {
+  async update(id: number, dto: UpdateStatutPromoDto): Promise<StatutPromo> {
     const existingStatutPromo = await this.statutPromoRepository.findOne({ where: { id } });
     if (!existingStatutPromo) {
       throw new NotFoundException(`StatutPromo avec l'id ${id} introuvable`);
@@ -45,7 +45,7 @@ export class StatutPromoService implements IStatutPromoService {
     return this.statutPromoRepository.save(updatedStatutPromo);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const statutPromo = await this.statutPromoRepository.findOne({ where: { id } });
     if (!statutPromo) {
       throw new NotFoundException(`StatutPromo avec l'id ${id} introuvable`);

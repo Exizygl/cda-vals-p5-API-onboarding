@@ -4,6 +4,8 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { StatutIdentification } from '../statut-identification/statutIdentification.entity';
 import { Promo } from '../promo/promo.entity';
@@ -15,10 +17,10 @@ export class Identification {
   @PrimaryGeneratedColumn('uuid', { name: 'id_identification' })
   id: string;
 
-  @Column({ name: 'date_creation_identification', type: 'timestamptz' })
+  @CreateDateColumn({ name: 'date_creation_identification', type: 'timestamptz' })
   dateCreation: Date;
 
-  @Column({ name: 'date_modification_identification', type: 'timestamptz', nullable: true })
+  @UpdateDateColumn({ name: 'date_modification_identification', type: 'timestamptz', nullable: true })
   dateModification: Date;
 
   @ManyToOne(() => StatutIdentification)

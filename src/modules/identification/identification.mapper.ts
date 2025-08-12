@@ -1,18 +1,26 @@
-import { IdentificationDto } from './dto/identification.dto';
+import { CreateIdentificationDto } from './dto/createIdentification.dto';
+import { UpdateIdentificationDto } from './dto/updateIdentification.dto';
 import { Identification } from './identification.entity';
-
-
+import { Promo } from '../promo/promo.entity';
+import { Utilisateur } from '../utilisateur/utilisateur.entity';
+import { StatutIdentification } from '../statut-identification/statutIdentification.entity';
 
 export class IdentificationMapper {
-  static toEntity(dto: IdentificationDto): Identification {
+  static fromCreateDto(dto: CreateIdentificationDto): Identification {
     const identification = new Identification();
+    identification.statutidentification = { id: dto.statutIdentificationId } as StatutIdentification;
+    identification.promo = { id: dto.promoId } as Promo;
+    identification.utilisateur = { id: dto.utilisateurId } as Utilisateur;
 
     return identification;
   }
 
-  static toPublic(entity: Identification) {
-    return {
-     
-    };
+  static mergeFromUpdateDto(existing: Identification, dto: UpdateIdentificationDto): Identification {
+
+    if (dto.statutIdentificationId !== undefined) {
+      existing.statutidentification = { id: dto.statutIdentificationId } as StatutIdentification;
+    }
+
+    return existing;
   }
 }
