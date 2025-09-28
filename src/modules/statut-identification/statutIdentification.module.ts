@@ -13,7 +13,9 @@ import { IStatutIdentificationServiceToken } from './statutIdentification.consta
       useClass: StatutIdentificationService,
     },
   ],
-  exports: [IStatutIdentificationServiceToken],
+  exports: [
+    IStatutIdentificationServiceToken
+  ],
   controllers: [StatutIdentificationController]
 })
 export class StatutIdentificationModule {}

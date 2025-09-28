@@ -53,7 +53,7 @@ describe('StatutPromoController', () => {
     statutPromoServiceMock.findOne.mockResolvedValue(mockStatutPromo);
     const result = await controller.findOne(1);
     expect(result).toEqual(mockStatutPromo);
-    expect(statutPromoServiceMock.findOne).toHaveBeenCalledWith('1');
+    expect(statutPromoServiceMock.findOne).toHaveBeenCalledWith(1);
   });
 
   it('should create a statutPromo', async () => {
@@ -73,13 +73,13 @@ describe('StatutPromoController', () => {
     statutPromoServiceMock.update.mockResolvedValue({ ...mockStatutPromo, libelle: 'User' });
     const result = await controller.update(1, dto);
     expect(result.libelle).toBe('User');
-    expect(statutPromoServiceMock.update).toHaveBeenCalledWith('1', dto);
+    expect(statutPromoServiceMock.update).toHaveBeenCalledWith(1, dto);
   });
 
   it('should remove a statutPromo', async () => {
     statutPromoServiceMock.remove.mockResolvedValue(undefined);
     const result = await controller.remove(1);
     expect(result).toEqual({ message: 'statutPromo deleted successfully' });
-    expect(statutPromoServiceMock.remove).toHaveBeenCalledWith('1');
+    expect(statutPromoServiceMock.remove).toHaveBeenCalledWith(1);
   });
 });
