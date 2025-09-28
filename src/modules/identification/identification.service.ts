@@ -43,7 +43,7 @@ export class IdentificationService implements IIdentificationService {
 
     const identification = this.identificationRepository.create({
       dateCreation: new Date(),
-      statutidentification: statut,
+      statutIdentification: statut,
       promo,
       utilisateur,
     });
@@ -72,7 +72,7 @@ export class IdentificationService implements IIdentificationService {
       if (!statut) {
         throw new NotFoundException(`StatutIdentification with id ${dto.statutIdentificationId} not found`);
       }
-      identification.statutidentification = statut;
+      identification.statutIdentification = statut;
     }
 
     return this.identificationRepository.save(identification);

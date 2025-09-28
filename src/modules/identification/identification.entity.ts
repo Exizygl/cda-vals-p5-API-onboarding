@@ -30,16 +30,16 @@ export class Identification {
   })
   dateModification: Date;
 
-  @ManyToOne(() => StatutIdentification)
+  @ManyToOne(() => StatutIdentification, (statut) => statut.id)
   @JoinColumn({ name: 'id_statut_identification' })
-  statutidentification: StatutIdentification;
+  statutIdentification: StatutIdentification;
 
   @ManyToOne(() => Promo, (promo) => promo.identifications)
   @JoinColumn({ name: 'id_promo' })
   @Exclude()
   promo: Promo;
 
-  @ManyToOne(() => Utilisateur, (utilisateur) => utilisateur.identifications)
+ @ManyToOne(() => Utilisateur, (utilisateur) => utilisateur.identifications)
   @JoinColumn({ name: 'id_utilisateur' })
   @Exclude()
   utilisateur: Utilisateur;

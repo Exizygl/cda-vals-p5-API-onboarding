@@ -8,7 +8,7 @@ import { StatutIdentification } from '../statut-identification/statutIdentificat
 export class IdentificationMapper {
   static fromCreateDto(dto: CreateIdentificationDto): Identification {
     const identification = new Identification();
-    identification.statutidentification = { id: dto.statutIdentificationId } as StatutIdentification;
+    identification.statutIdentification = { id: dto.statutIdentificationId } as StatutIdentification;
     identification.promo = { id: dto.promoId } as Promo;
     identification.utilisateur = { id: dto.utilisateurId } as Utilisateur;
 
@@ -18,7 +18,7 @@ export class IdentificationMapper {
   static mergeFromUpdateDto(existing: Identification, dto: UpdateIdentificationDto): Identification {
 
     if (dto.statutIdentificationId !== undefined) {
-      existing.statutidentification = { id: dto.statutIdentificationId } as StatutIdentification;
+      existing.statutIdentification = { id: dto.statutIdentificationId } as StatutIdentification;
     }
 
     return existing;
