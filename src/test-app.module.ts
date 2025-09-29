@@ -12,6 +12,15 @@ import { StatutIdentificationModule } from './modules/statut-identification/stat
 import { StatutPromoModule } from './modules/statut-promo/statutPromo.module';
 import { PromoModule } from './modules/promo/promo.module';
 import { ConfigBotModule } from './modules/config-bot/config-bot.module';
+import { Promo } from './modules/promo/promo.entity';
+import { StatutPromo } from './modules/statut-promo/statutPromo.entity';
+import { Formation } from './modules/formation/formation.entity';
+import { Campus } from './modules/campus/campus.entity';
+import { Identification } from './modules/identification/identification.entity';
+import { Utilisateur } from './modules/utilisateur/utilisateur.entity';
+import { StatutIdentification } from './modules/statut-identification/statutIdentification.entity';
+import { Role } from './modules/role/role.entity';
+import { ConfigBot } from './modules/config-bot/config-bot.entity';
 
 @Module({
   imports: [
@@ -32,7 +41,15 @@ import { ConfigBotModule } from './modules/config-bot/config-bot.module';
         database: config.get('DB_NAME', 'onboarding_test'),
         synchronize: true,
         entities: [
-          __dirname + '/modules/**/*.entity{.ts,.js}', // or list them manually
+        Promo,
+        StatutPromo,
+        Formation,
+        Campus,
+        Identification,
+        Utilisateur,
+        StatutIdentification,
+        Role,
+        ConfigBot,
         ],
       }),
     }),
