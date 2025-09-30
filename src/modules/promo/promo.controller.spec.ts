@@ -62,24 +62,38 @@ await dataSource.destroy();
 await app.close();
 });
 
+
 it('POST /promos should create a promo', async () => {
-const dto = {
-nom: 'Promo Test',
-dateDebut: '2025-09-01',
-dateFin: '2025-12-01',
-statutPromoId: statutActif.id, // on utilise le statut créé en beforeEach
-};
+  // créer les entités liées obligatoires
+  const formation = await dataSource.getRepository(Formation).save({
+    nom: 'Formation Test',
+  });
 
-const res = await request(app.getHttpServer())
-  .post('/promos')
-  .send(dto)
-  .expect(201);
+  const campus = await dataSource.getRepository(Campus).save({
+    nom: 'Campus Test',
+  });
 
-expect(res.body.nom).toBe('Promo Test');
-expect(res.body.id).toBeDefined();
+  // payload complet
+  const dto = {
+    nom: 'Promo Test',
+    dateDebut: '2025-09-01',
+    dateFin: '2025-12-01',
+    statutPromoId: statutActif.id,
+    formationId: formation.id,
+    campusId: campus.id,
+  };
 
+  const res = await request(app.getHttpServer())
+    .post('/promos')
+    .send(dto)
+    .expect(201);
 
+  expect(res.body.nom).toBe('Promo Test');
+  expect(res.body.id).toBeDefined();
+  expect(res.body.formation.id).toBe(formation.id);
+  expect(res.body.campus.id).toBe(campus.id);
 });
+
 
 it('GET /promos should return a list', async () => {
 const res = await request(app.getHttpServer())
