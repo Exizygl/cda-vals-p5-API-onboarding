@@ -12,10 +12,9 @@ import { Campus } from '../campus/campus.entity';
 describe('PromoController (Integration with PostgreSQL)', () => {
   let app: INestApplication;
   let dataSource: DataSource;
-
   let statutActif: StatutPromo;
-  let campus: Campus;
   let formation: Formation;
+  let campus: Campus;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -27,45 +26,18 @@ describe('PromoController (Integration with PostgreSQL)', () => {
     await app.init();
 
     dataSource = moduleFixture.get(DataSource);
-    console.log(
-      'Entities loaded:',
-      dataSource.entityMetadatas.map((e) => e.name),
-    );
-
-    // Wait until DB is ready
-    let connected = false;
-    for (let i = 0; i < 10 && !connected; i++) {
-      try {
-        await dataSource.query('SELECT 1');
-        connected = true;
-      } catch (err) {
-        console.log(`Database not ready (attempt ${i + 1}), retrying...`);
-        await new Promise((res) => setTimeout(res, 1000));
-      }
-    }
-    if (!connected) {
-      throw new Error('Database connection could not be established');
-    }
   });
 
   beforeEach(async () => {
-    // Clean tables between tests
+    // reset tables
     await dataSource.query(
-      `TRUNCATE TABLE promo, statut_promo, formation, campus, identification RESTART IDENTITY CASCADE`,
+      `TRUNCATE TABLE promo, statut_promo, formation, campus, identification RESTART IDENTITY CASCADE`
     );
 
-    // créer les dépendances minimales
-    statutActif = await dataSource.getRepository(StatutPromo).save({
-      libelle: 'actif',
-    });
-
-    formation = await dataSource.getRepository(Formation).save({
-      nom: 'Formation Test',
-    });
-
-    campus = await dataSource.getRepository(Campus).save({
-      nom: 'Campus Test',
-    });
+    // créer les entités nécessaires
+    statutActif = await dataSource.getRepository(StatutPromo).save({ libelle: 'actif' });
+    formation = await dataSource.getRepository(Formation).save({ nom: 'Formation Test' });
+    campus = await dataSource.getRepository(Campus).save({ nom: 'Campus Test' });
   });
 
   afterAll(async () => {
@@ -79,8 +51,8 @@ describe('PromoController (Integration with PostgreSQL)', () => {
       dateDebut: '2025-09-01',
       dateFin: '2025-12-01',
       statutPromoId: statutActif.id,
-      formationId: formation.id,
-      campusId: campus.id,
+      idFormation: formation.id, 
+      idCampus: campus.id,       
     };
 
     const res = await request(app.getHttpServer())
@@ -90,22 +62,34 @@ describe('PromoController (Integration with PostgreSQL)', () => {
 
     expect(res.body.nom).toBe('Promo Test');
     expect(res.body.id).toBeDefined();
-    expect(res.body.formation.id).toBe(formation.id);
-    expect(res.body.campus.id).toBe(campus.id);
+    expect(res.body.formationId).toBe(formation.id);
+    expect(res.body.campusId).toBe(campus.id);
   });
 
   it('GET /promos should return a list', async () => {
+    const promoRepo = dataSource.getRepository(Promo);
+    await promoRepo.save({
+      nom: 'Promo DB',
+      dateDebut: new Date('2025-09-01'),
+      dateFin: new Date('2025-12-01'),
+      statutPromo: statutActif,
+      formation,
+      campus,
+    });
+
     const res = await request(app.getHttpServer())
       .get('/promos')
       .expect(200);
 
     expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0].formationId).toBe(formation.id);
+    expect(res.body[0].campusId).toBe(campus.id);
   });
 
   it('GET /promos/:id should return a promo', async () => {
-    const promoRepo = dataSource.getRepository(Promo);
-    const promo = await promoRepo.save({
-      nom: 'Promo DB',
+    const promo = await dataSource.getRepository(Promo).save({
+      nom: 'Promo Unique',
       dateDebut: new Date('2025-09-01'),
       dateFin: new Date('2025-12-01'),
       statutPromo: statutActif,
@@ -117,13 +101,13 @@ describe('PromoController (Integration with PostgreSQL)', () => {
       .get(`/promos/${promo.id}`)
       .expect(200);
 
-    expect(res.body.nom).toBe('Promo DB');
+    expect(res.body.nom).toBe('Promo Unique');
+    expect(res.body.formationId).toBe(formation.id);
+    expect(res.body.campusId).toBe(campus.id);
   });
 
   it('GET /promos/actif should return active promos', async () => {
-    const promoRepo = dataSource.getRepository(Promo);
-
-    await promoRepo.save({
+    await dataSource.getRepository(Promo).save({
       nom: 'Active Promo',
       dateDebut: new Date('2025-01-01'),
       dateFin: new Date('2025-12-31'),
@@ -140,4 +124,3 @@ describe('PromoController (Integration with PostgreSQL)', () => {
     expect(res.body.some((p) => p.nom === 'Active Promo')).toBe(true);
   });
 });
-
