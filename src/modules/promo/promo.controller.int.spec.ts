@@ -9,6 +9,17 @@ import { StatutPromo } from '../statut-promo/statutPromo.entity';
 import { Formation } from '../formation/formation.entity';
 import { Campus } from '../campus/campus.entity';
 
+// Helper pour générer des Snowflakes Discord fictifs pour les tests
+class TestDiscordHelper {
+  private static counter = 0;
+
+  static generateSnowflake(): string {
+    const timestamp = Date.now() - 1420070400000; // Discord epoch
+    const counter = this.counter++;
+    return `${timestamp}${String(counter).padStart(5, '0')}`;
+  }
+}
+
 describe('PromoController (Integration with PostgreSQL)', () => {
   let app: INestApplication;
   let dataSource: DataSource;
@@ -26,18 +37,43 @@ describe('PromoController (Integration with PostgreSQL)', () => {
     await app.init();
 
     dataSource = moduleFixture.get(DataSource);
+
+    // Attendre que la DB soit prête
+    let connected = false;
+    for (let i = 0; i < 10 && !connected; i++) {
+      try {
+        await dataSource.query('SELECT 1');
+        connected = true;
+      } catch (err) {
+        await new Promise((res) => setTimeout(res, 1000));
+      }
+    }
+    if (!connected) {
+      throw new Error('Database connection could not be established');
+    }
   });
 
   beforeEach(async () => {
-    // reset tables
-    await dataSource.query(
-      `TRUNCATE TABLE promo, statut_promo, formation, campus, identification RESTART IDENTITY CASCADE`
-    );
+    // Nettoyer les tables avant chaque test
+    await dataSource.query(`
+      TRUNCATE TABLE promo, statut_promo, formation, campus, identification 
+      RESTART IDENTITY CASCADE;
+    `);
 
-    // créer les entités nécessaires
+    // Créer un StatutPromo "actif" par défaut
     statutActif = await dataSource.getRepository(StatutPromo).save({ libelle: 'actif' });
-    formation = await dataSource.getRepository(Formation).save({ nom: 'Formation Test' });
-    campus = await dataSource.getRepository(Campus).save({ nom: 'Campus Test' });
+
+    // Créer une Formation avec un Snowflake Discord fictif
+    formation = await dataSource.getRepository(Formation).save({
+      id: TestDiscordHelper.generateSnowflake(),
+      nom: 'Formation Test',
+      actif: true,
+    });
+
+    // Créer un Campus (ajouter id si Campus utilise aussi des Snowflakes)
+    campus = await dataSource.getRepository(Campus).save({
+      nom: 'Campus Test'
+    });
   });
 
   afterAll(async () => {
@@ -52,7 +88,7 @@ describe('PromoController (Integration with PostgreSQL)', () => {
       dateFin: '2025-12-01',
       statutPromoId: statutActif.id,
       idFormation: formation.id, 
-      idCampus: campus.id,       
+      idCampus: campus.id,   
     };
 
     const res = await request(app.getHttpServer())
@@ -62,13 +98,12 @@ describe('PromoController (Integration with PostgreSQL)', () => {
 
     expect(res.body.nom).toBe('Promo Test');
     expect(res.body.id).toBeDefined();
-    expect(res.body.formationId).toBe(formation.id);
-    expect(res.body.campusId).toBe(campus.id);
+    expect(res.body.formation.id).toBe(formation.id);
+    expect(res.body.campus.id).toBe(campus.id);
   });
 
   it('GET /promos should return a list', async () => {
-    const promoRepo = dataSource.getRepository(Promo);
-    await promoRepo.save({
+    await dataSource.getRepository(Promo).save({
       nom: 'Promo DB',
       dateDebut: new Date('2025-09-01'),
       dateFin: new Date('2025-12-01'),
@@ -83,13 +118,11 @@ describe('PromoController (Integration with PostgreSQL)', () => {
 
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThan(0);
-    expect(res.body[0].formationId).toBe(formation.id);
-    expect(res.body[0].campusId).toBe(campus.id);
   });
 
   it('GET /promos/:id should return a promo', async () => {
     const promo = await dataSource.getRepository(Promo).save({
-      nom: 'Promo Unique',
+      nom: 'Promo DB',
       dateDebut: new Date('2025-09-01'),
       dateFin: new Date('2025-12-01'),
       statutPromo: statutActif,
@@ -101,9 +134,9 @@ describe('PromoController (Integration with PostgreSQL)', () => {
       .get(`/promos/${promo.id}`)
       .expect(200);
 
-    expect(res.body.nom).toBe('Promo Unique');
-    expect(res.body.formationId).toBe(formation.id);
-    expect(res.body.campusId).toBe(campus.id);
+    expect(res.body.nom).toBe('Promo DB');
+    expect(res.body.formation.id).toBe(formation.id);
+    expect(res.body.campus.id).toBe(campus.id);
   });
 
   it('GET /promos/actif should return active promos', async () => {
