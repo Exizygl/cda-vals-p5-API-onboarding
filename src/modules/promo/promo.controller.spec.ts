@@ -1,140 +1,209 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
-import { DataSource } from 'typeorm';
-
-import { TestAppModule } from '../../test-app.module';
+import { PromoController } from './promo.controller';
+import { IPromoService } from './interface/IPromoService';
+import { IPromoServiceToken } from './promo.constants';
+import { CreatePromoDto } from './dto/createPromo.dto';
+import { UpdatePromoDto } from './dto/updatePromo.dto';
 import { Promo } from './promo.entity';
-import { StatutPromo } from '../statut-promo/statutPromo.entity';
-import { Formation } from '../formation/formation.entity';
-import { Campus } from '../campus/campus.entity';
 
-describe('PromoController (Integration with PostgreSQL)', () => {
-  let app: INestApplication;
-  let dataSource: DataSource;
-  let statutActif: StatutPromo;
-  let formation: Formation;
-  let campus: Campus;
+describe('PromoController (Unit)', () => {
+  let controller: PromoController;
+  let service: jest.Mocked<IPromoService>;
 
-  beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [TestAppModule],
-    }).compile();
+  const mockPromo: Promo = {
+    id: 'uuid-123',
+    nom: 'Promo Test',
+    dateDebut: new Date('2025-09-01'),
+    dateFin: new Date('2025-12-01'),
+    snowflake: '1000000000000000001',
+    dateCreation: new Date(),
+    dateModification: new Date(),
+    statutPromo: { id: 1, libelle: 'actif', dateCreation: new Date(), dateModification: new Date() },
+    formation: { id: '1000000000000000002', nom: 'Formation Test', actif: true, dateCreation: new Date(), dateModification: new Date() },
+    campus: { id: '1000000000000000003', nom: 'Campus Test', actif: true, dateCreation: new Date(), dateModification: new Date() },
+    identifications: [],
+  };
 
-    app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-    await app.init();
-
-    dataSource = moduleFixture.get(DataSource);
-
-    // Attendre que la DB soit prête
-    let connected = false;
-    for (let i = 0; i < 10 && !connected; i++) {
-      try {
-        await dataSource.query('SELECT 1');
-        connected = true;
-      } catch (err) {
-        await new Promise((res) => setTimeout(res, 1000));
-      }
-    }
-    if (!connected) {
-      throw new Error('Database connection could not be established');
-    }
-  });
+  const mockPromoService = {
+    findAll: jest.fn(),
+    findActif: jest.fn(),
+    findOne: jest.fn(),
+    findOneBySnowflake: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  };
 
   beforeEach(async () => {
-    // Nettoyer les tables avant chaque test
-    await dataSource.query(`
-      TRUNCATE TABLE promo, statut_promo, formation, campus, identification 
-      RESTART IDENTITY CASCADE;
-    `);
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [PromoController],
+      providers: [
+        {
+          provide: IPromoServiceToken,
+          useValue: mockPromoService,
+        },
+      ],
+    }).compile();
 
-    // Créer un StatutPromo "actif" par défaut
-    statutActif = await dataSource.getRepository(StatutPromo).save({ libelle: 'actif' });
+    controller = module.get<PromoController>(PromoController);
+    service = module.get(IPromoServiceToken);
 
-    // Créer une Formation et un Campus par défaut
-    formation = await dataSource.getRepository(Formation).save({ nom: 'Formation Test' });
-    campus = await dataSource.getRepository(Campus).save({ nom: 'Campus Test' });
+    // Reset tous les mocks avant chaque test
+    jest.clearAllMocks();
   });
 
-  afterAll(async () => {
-    await dataSource.destroy();
-    await app.close();
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 
-  it('POST /promos should create a promo', async () => {
-    const dto = {
-      nom: 'Promo Test',
-      dateDebut: '2025-09-01',
-      dateFin: '2025-12-01',
-      statutPromoId: statutActif.id,
-      idFormation: formation.id, 
-      idCampus: campus.id,   
-    };
+  describe('findAll', () => {
+    it('should return an array of promos', async () => {
+      const promos = [mockPromo];
+      service.findAll.mockResolvedValue(promos);
 
-    const res = await request(app.getHttpServer())
-      .post('/promos')
-      .send(dto)
-      .expect(201);
+      const result = await controller.findAll();
 
-    expect(res.body.nom).toBe('Promo Test');
-    expect(res.body.id).toBeDefined();
-    expect(res.body.formation.id).toBe(formation.id);
-    expect(res.body.campus.id).toBe(campus.id);
-  });
-
-  it('GET /promos should return a list', async () => {
-    await dataSource.getRepository(Promo).save({
-      nom: 'Promo DB',
-      dateDebut: new Date('2025-09-01'),
-      dateFin: new Date('2025-12-01'),
-      statutPromo: statutActif,
-      formation,
-      campus,
+      expect(result).toEqual(promos);
+      expect(service.findAll).toHaveBeenCalledTimes(1);
+      expect(service.findAll).toHaveBeenCalledWith();
     });
 
-    const res = await request(app.getHttpServer())
-      .get('/promos')
-      .expect(200);
+    it('should return an empty array when no promos exist', async () => {
+      service.findAll.mockResolvedValue([]);
 
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(0);
+      const result = await controller.findAll();
+
+      expect(result).toEqual([]);
+      expect(service.findAll).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('GET /promos/:id should return a promo', async () => {
-    const promo = await dataSource.getRepository(Promo).save({
-      nom: 'Promo DB',
-      dateDebut: new Date('2025-09-01'),
-      dateFin: new Date('2025-12-01'),
-      statutPromo: statutActif,
-      formation,
-      campus,
+  describe('findActif', () => {
+    it('should return only active promos', async () => {
+      const activePromos = [mockPromo];
+      service.findActif.mockResolvedValue(activePromos);
+
+      const result = await controller.findActif();
+
+      expect(result).toEqual(activePromos);
+      expect(service.findActif).toHaveBeenCalledTimes(1);
+      expect(service.findActif).toHaveBeenCalledWith();
     });
-
-    const res = await request(app.getHttpServer())
-      .get(`/promos/${promo.id}`)
-      .expect(200);
-
-    expect(res.body.nom).toBe('Promo DB');
-    expect(res.body.formation.id).toBe(formation.id);
-    expect(res.body.campus.id).toBe(campus.id);
   });
 
-  it('GET /promos/actif should return active promos', async () => {
-    await dataSource.getRepository(Promo).save({
-      nom: 'Active Promo',
-      dateDebut: new Date('2025-01-01'),
-      dateFin: new Date('2025-12-31'),
-      statutPromo: statutActif,
-      formation,
-      campus,
+  describe('findOne', () => {
+    it('should return a single promo by id', async () => {
+      const id = 'uuid-123';
+      service.findOne.mockResolvedValue(mockPromo);
+
+      const result = await controller.findOne(id);
+
+      expect(result).toEqual(mockPromo);
+      expect(service.findOne).toHaveBeenCalledTimes(1);
+      expect(service.findOne).toHaveBeenCalledWith(id);
     });
 
-    const res = await request(app.getHttpServer())
-      .get('/promos/actif')
-      .expect(200);
+    it('should throw error when promo not found', async () => {
+      const id = 'non-existent-id';
+      service.findOne.mockRejectedValue(new Error('Promo not found'));
 
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.some((p) => p.nom === 'Active Promo')).toBe(true);
+      await expect(controller.findOne(id)).rejects.toThrow('Promo not found');
+      expect(service.findOne).toHaveBeenCalledWith(id);
+    });
+  });
+
+  describe('findOneBySnowflake', () => {
+    it('should return a promo by snowflake id', async () => {
+      const snowflake = '1000000000000000001';
+      service.findOneBySnowflake.mockResolvedValue(mockPromo);
+
+      const result = await controller.findOneBySnowflake(snowflake);
+
+      expect(result).toEqual(mockPromo);
+      expect(service.findOneBySnowflake).toHaveBeenCalledTimes(1);
+      expect(service.findOneBySnowflake).toHaveBeenCalledWith(snowflake);
+    });
+
+    it('should throw error when promo with snowflake not found', async () => {
+      const snowflake = '9999999999999999999';
+      service.findOneBySnowflake.mockRejectedValue(new Error('Promo not found'));
+
+      await expect(controller.findOneBySnowflake(snowflake)).rejects.toThrow('Promo not found');
+      expect(service.findOneBySnowflake).toHaveBeenCalledWith(snowflake);
+    });
+  });
+
+  describe('create', () => {
+    it('should create a new promo', async () => {
+      const createDto: CreatePromoDto = {
+        nom: 'Promo Test',
+        dateDebut: new Date('2025-09-01'),
+        dateFin: new Date('2025-12-01'),
+        statutId: 1,
+        formationId: '1000000000000000002',
+        campusId: '1000000000000000003',
+      };
+      service.create.mockResolvedValue(mockPromo);
+
+      const result = await controller.create(createDto);
+
+      expect(result).toEqual(mockPromo);
+      expect(service.create).toHaveBeenCalledTimes(1);
+      expect(service.create).toHaveBeenCalledWith(createDto);
+    });
+
+    it('should throw error when creation fails', async () => {
+      const createDto: CreatePromoDto = {
+        nom: 'Invalid Promo',
+        dateDebut: new Date('2025-09-01'),
+        dateFin: new Date('2025-12-01'),
+        statutId: 999,
+        formationId: 'invalid',
+        campusId: 'invalid',
+      };
+      service.create.mockRejectedValue(new Error('Creation failed'));
+
+      await expect(controller.create(createDto)).rejects.toThrow('Creation failed');
+      expect(service.create).toHaveBeenCalledWith(createDto);
+    });
+  });
+
+  describe('update', () => {
+    it('should update an existing promo', async () => {
+      const id = 'uuid-123';
+      const updateDto: Partial<UpdatePromoDto> = {
+        nom: 'Promo Updated',
+      };
+      const updatedPromo = { ...mockPromo, nom: 'Promo Updated' };
+      service.update.mockResolvedValue(updatedPromo);
+
+      const result = await controller.update(id, updateDto as UpdatePromoDto);
+
+      expect(result).toEqual(updatedPromo);
+      expect(service.update).toHaveBeenCalledTimes(1);
+      expect(service.update).toHaveBeenCalledWith(id, updateDto);
+    });
+
+    it('should throw error when promo to update not found', async () => {
+      const id = 'non-existent-id';
+      const updateDto: Partial<UpdatePromoDto> = { nom: 'New Name' };
+      service.update.mockRejectedValue(new Error('Promo not found'));
+
+      await expect(controller.update(id, updateDto as UpdatePromoDto)).rejects.toThrow('Promo not found');
+      expect(service.update).toHaveBeenCalledWith(id, updateDto);
+    });
+
+    it('should update only specified fields', async () => {
+      const id = 'uuid-123';
+      const updateDto: Partial<UpdatePromoDto> = {
+        dateFin: new Date('2026-01-01'),
+      };
+      const updatedPromo = { ...mockPromo, dateFin: new Date('2026-01-01') };
+      service.update.mockResolvedValue(updatedPromo);
+
+      const result = await controller.update(id, updateDto as UpdatePromoDto);
+
+      expect(result.dateFin).toEqual(new Date('2026-01-01'));
+      expect(service.update).toHaveBeenCalledWith(id, updateDto);
+    });
   });
 });

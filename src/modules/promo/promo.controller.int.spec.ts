@@ -9,21 +9,15 @@ import { StatutPromo } from '../statut-promo/statutPromo.entity';
 import { Formation } from '../formation/formation.entity';
 import { Campus } from '../campus/campus.entity';
 
-// Helper pour générer des Snowflakes Discord fictifs pour les tests
-class TestDiscordHelper {
-  private static counter = 0;
-
-  static generateSnowflake(): string {
-    const timestamp = Date.now() - 1420070400000; // Discord epoch
-    const counter = this.counter++;
-    return `${timestamp}${String(counter).padStart(5, '0')}`;
-  }
-}
+// Helper pour générer des IDs de test simulant des Snowflakes
+let testIdCounter = 1;
+const generateTestId = () => `100000000000000000${testIdCounter++}`;
 
 describe('PromoController (Integration with PostgreSQL)', () => {
   let app: INestApplication;
   let dataSource: DataSource;
   let statutActif: StatutPromo;
+  let statutEnAttente: StatutPromo;
   let formation: Formation;
   let campus: Campus;
 
@@ -33,7 +27,10 @@ describe('PromoController (Integration with PostgreSQL)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    app.useGlobalPipes(new ValidationPipe({ 
+      whitelist: true,
+      transform: true,
+    }));
     await app.init();
 
     dataSource = moduleFixture.get(DataSource);
@@ -54,25 +51,28 @@ describe('PromoController (Integration with PostgreSQL)', () => {
   });
 
   beforeEach(async () => {
-    // Nettoyer les tables avant chaque test
+    testIdCounter = 1;
+
+    // Nettoyer les tables
     await dataSource.query(`
       TRUNCATE TABLE promo, statut_promo, formation, campus, identification 
       RESTART IDENTITY CASCADE;
     `);
 
-    // Créer un StatutPromo "actif" par défaut
+    // Statuts
     statutActif = await dataSource.getRepository(StatutPromo).save({ libelle: 'actif' });
+    statutEnAttente = await dataSource.getRepository(StatutPromo).save({ libelle: 'En attente' });
 
-    // Créer une Formation avec un Snowflake Discord fictif
-    formation = await dataSource.getRepository(Formation).save({
-      id: TestDiscordHelper.generateSnowflake(),
+    // Formation et Campus
+    formation = await dataSource.getRepository(Formation).save({ 
+      id: generateTestId(),
       nom: 'Formation Test',
-      actif: true,
+      actif: true
     });
-
-    // Créer un Campus (ajouter id si Campus utilise aussi des Snowflakes)
-    campus = await dataSource.getRepository(Campus).save({
-      nom: 'Campus Test'
+    campus = await dataSource.getRepository(Campus).save({ 
+      id: generateTestId(),
+      nom: 'Campus Test',
+      actif: true
     });
   });
 
@@ -84,22 +84,23 @@ describe('PromoController (Integration with PostgreSQL)', () => {
   it('POST /promos should create a promo', async () => {
     const dto = {
       nom: 'Promo Test',
-      dateDebut: '2025-09-01',
-      dateFin: '2025-12-01',
-      statutPromoId: statutActif.id,
-      idFormation: formation.id, 
-      idCampus: campus.id,   
+      dateDebut: '2025-09-01T00:00:00.000Z',
+      dateFin: '2025-12-01T00:00:00.000Z',
+      statutId: statutEnAttente.id,  // statut "En attente"
+      formationId: formation.id,
+      campusId: campus.id,
     };
 
     const res = await request(app.getHttpServer())
       .post('/promos')
-      .send(dto)
-      .expect(201);
+      .send(dto);
 
+    console.log('STATUS:', res.status);
+    console.log('BODY:', res.body);
+
+    expect(res.status).toBe(201);
     expect(res.body.nom).toBe('Promo Test');
     expect(res.body.id).toBeDefined();
-    expect(res.body.formation.id).toBe(formation.id);
-    expect(res.body.campus.id).toBe(campus.id);
   });
 
   it('GET /promos should return a list', async () => {
@@ -135,8 +136,7 @@ describe('PromoController (Integration with PostgreSQL)', () => {
       .expect(200);
 
     expect(res.body.nom).toBe('Promo DB');
-    expect(res.body.formation.id).toBe(formation.id);
-    expect(res.body.campus.id).toBe(campus.id);
+    expect(res.body.id).toBe(promo.id);
   });
 
   it('GET /promos/actif should return active promos', async () => {

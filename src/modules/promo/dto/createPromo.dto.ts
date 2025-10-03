@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsString, IsDate, IsNumber, IsNotEmpty, Length, Matches } from 'class-validator';
 
 export class CreatePromoDto {
@@ -8,10 +9,12 @@ export class CreatePromoDto {
 
   @IsNotEmpty()
   @IsDate()
+  @Type(() => Date)
   dateDebut: Date;
 
   @IsNotEmpty()
   @IsDate()
+  @Type(() => Date)
   dateFin: Date;
 
   @IsNotEmpty()
