@@ -29,6 +29,10 @@ describe('PromoController (Unit)', () => {
     findActif: jest.fn(),
     findOne: jest.fn(),
     findOneBySnowflake: jest.fn(),
+    findByIds: jest.fn(),
+    findBySnowflakes: jest.fn(),
+    findPromoToStart: jest.fn(),
+    findPromoToArchive: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
   };
@@ -204,6 +208,169 @@ describe('PromoController (Unit)', () => {
 
       expect(result.dateFin).toEqual(new Date('2026-01-01'));
       expect(service.update).toHaveBeenCalledWith(id, updateDto);
+    });
+  });
+
+  // ========== NOUVEAUX TESTS ==========
+
+  describe('findByIds', () => {
+    it('should return promos matching the given ids', async () => {
+      const ids = ['uuid-123', 'uuid-456', 'uuid-789'];
+      const promos = [
+        mockPromo,
+        { ...mockPromo, id: 'uuid-456', nom: 'Promo 2' },
+      ] as Promo[];
+      
+      service.findByIds.mockResolvedValue(promos);
+
+      const result = await controller.findByIds(ids);
+
+      expect(result).toEqual(promos);
+      expect(service.findByIds).toHaveBeenCalledTimes(1);
+      expect(service.findByIds).toHaveBeenCalledWith(ids);
+    });
+
+    it('should return empty array when no ids match', async () => {
+      const ids = ['non-existent-1', 'non-existent-2'];
+      service.findByIds.mockResolvedValue([]);
+
+      const result = await controller.findByIds(ids);
+
+      expect(result).toEqual([]);
+      expect(service.findByIds).toHaveBeenCalledWith(ids);
+    });
+
+    it('should handle single id in array', async () => {
+      const ids = ['uuid-123'];
+      service.findByIds.mockResolvedValue([mockPromo]);
+
+      const result = await controller.findByIds(ids);
+
+      expect(result).toEqual([mockPromo]);
+      expect(service.findByIds).toHaveBeenCalledWith(ids);
+    });
+  });
+
+  describe('findBySnowflakes', () => {
+    it('should return promos matching the given snowflakes', async () => {
+      const snowflakes = ['1000000000000000001', '1000000000000000002'];
+      const promos = [
+        mockPromo,
+        { ...mockPromo, id: 'uuid-456', snowflake: '1000000000000000002' },
+      ] as Promo[];
+      
+      service.findBySnowflakes.mockResolvedValue(promos);
+
+      const result = await controller.findBySnowflakes(snowflakes);
+
+      expect(result).toEqual(promos);
+      expect(service.findBySnowflakes).toHaveBeenCalledTimes(1);
+      expect(service.findBySnowflakes).toHaveBeenCalledWith(snowflakes);
+    });
+
+    it('should return empty array when no snowflakes match', async () => {
+      const snowflakes = ['9999999999999999999'];
+      service.findBySnowflakes.mockResolvedValue([]);
+
+      const result = await controller.findBySnowflakes(snowflakes);
+
+      expect(result).toEqual([]);
+      expect(service.findBySnowflakes).toHaveBeenCalledWith(snowflakes);
+    });
+  });
+
+  describe('findPromoToStart', () => {
+    it('should return promos that need to start', async () => {
+      const promosToStart = [
+        {
+          ...mockPromo,
+          statutPromo: { id: 2, libelle: 'En attente', dateCreation: new Date(), dateModification: new Date() },
+        },
+      ] as Promo[];
+      
+      service.findPromoToStart.mockResolvedValue(promosToStart);
+
+      const result = await controller.findPromoToStart();
+
+      expect(result).toEqual(promosToStart);
+      expect(service.findPromoToStart).toHaveBeenCalledTimes(1);
+      expect(service.findPromoToStart).toHaveBeenCalledWith();
+    });
+
+    it('should return null when no promos need to start', async () => {
+      service.findPromoToStart.mockResolvedValue(null);
+
+      const result = await controller.findPromoToStart();
+
+      expect(result).toBeNull();
+      expect(service.findPromoToStart).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return empty array when result is empty', async () => {
+      service.findPromoToStart.mockResolvedValue([]);
+
+      const result = await controller.findPromoToStart();
+
+      expect(result).toEqual([]);
+      expect(service.findPromoToStart).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('findPromoToArchive', () => {
+    it('should return active promos that need archiving (end date > 1 month ago)', async () => {
+      const promosToArchive = [
+        {
+          ...mockPromo,
+          dateFin: new Date('2024-08-01'), // Terminée il y a plus d'1 mois
+          statutPromo: { id: 1, libelle: 'actif', dateCreation: new Date(), dateModification: new Date() },
+        },
+      ] as Promo[];
+      
+      service.findPromoToArchive.mockResolvedValue(promosToArchive);
+
+      const result = await controller.findPromoToArchive();
+
+      expect(result).toEqual(promosToArchive);
+      expect(service.findPromoToArchive).toHaveBeenCalledTimes(1);
+      expect(service.findPromoToArchive).toHaveBeenCalledWith();
+    });
+
+    it('should return null when no promos need archiving', async () => {
+      service.findPromoToArchive.mockResolvedValue(null);
+
+      const result = await controller.findPromoToArchive();
+
+      expect(result).toBeNull();
+      expect(service.findPromoToArchive).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return multiple active promos ready for archiving', async () => {
+      const promosToArchive = [
+        {
+          ...mockPromo,
+          id: 'uuid-1',
+          nom: 'Promo Terminée 1',
+          dateFin: new Date('2024-07-01'),
+          statutPromo: { id: 1, libelle: 'actif', dateCreation: new Date(), dateModification: new Date() },
+        },
+        {
+          ...mockPromo,
+          id: 'uuid-2',
+          nom: 'Promo Terminée 2',
+          dateFin: new Date('2024-08-01'),
+          statutPromo: { id: 1, libelle: 'actif', dateCreation: new Date(), dateModification: new Date() },
+        },
+      ] as Promo[];
+      
+      service.findPromoToArchive.mockResolvedValue(promosToArchive);
+
+      const result = await controller.findPromoToArchive();
+
+      expect(result).toHaveLength(2);
+      expect(result).toEqual(promosToArchive);
+      // Vérifie que ce sont bien des promos ACTIVES
+      expect(result![0].statutPromo.libelle).toBe('actif');
+      expect(result![1].statutPromo.libelle).toBe('actif');
     });
   });
 });

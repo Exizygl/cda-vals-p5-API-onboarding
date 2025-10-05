@@ -308,17 +308,20 @@ describe('PromoService', () => {
       repo.createQueryBuilder.mockReturnValue(mockQueryBuilder);
     });
 
-    it('should return archived promos', async () => {
-      const archivedPromos = [
+    it('should return active promos with end date older than 1 month', async () => {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      
+      const promosToArchive = [
         {
           id: '1',
           nom: 'Promo 1',
           dateDebut: new Date('2024-01-01'),
-          dateFin: new Date('2024-12-31'),
+          dateFin: new Date('2024-10-01'), // Terminée il y a plus d'1 mois
           snowflake: '789012',
           dateCreation: new Date(),
           dateModification: new Date(),
-          statutPromo: { libelle: 'Archivé' } as any,
+          statutPromo: { libelle: 'actif' } as any, // ✅ Promo ACTIVE
           formation: {} as any,
           campus: {} as any,
           identifications: [
@@ -330,11 +333,11 @@ describe('PromoService', () => {
         },
       ] as Promo[];
 
-      mockQueryBuilder.getMany.mockResolvedValue(archivedPromos);
+      mockQueryBuilder.getMany.mockResolvedValue(promosToArchive);
 
       const result = await service.findPromoToArchive();
 
-      expect(result).toEqual(archivedPromos);
+      expect(result).toEqual(promosToArchive);
       expect(repo.createQueryBuilder).toHaveBeenCalledWith('promo');
       expect(mockQueryBuilder.innerJoinAndSelect).toHaveBeenCalledWith(
         'promo.statutPromo',
@@ -342,24 +345,38 @@ describe('PromoService', () => {
       );
       expect(mockQueryBuilder.where).toHaveBeenCalledWith(
         'statutPromo.libelle = :promoLibelle',
-        { promoLibelle: 'Archivé' },
+        { promoLibelle: 'actif' }, // ✅ Cherche les promos ACTIVES
       );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
-        'statutIdentification.libelle = :statutLibelle',
-        { statutLibelle: 'Accepté' },
+        'promo.dateFin < :oneMonthAgo',
+        expect.objectContaining({ oneMonthAgo: expect.any(Date) }),
       );
       expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
-        'promo.dateDebut',
-        'DESC',
+        'promo.dateFin',
+        'ASC',
       );
     });
 
-    it('should return null when no archived promos exist', async () => {
+    it('should return null when no promos need archiving', async () => {
       mockQueryBuilder.getMany.mockResolvedValue([]);
 
       const result = await service.findPromoToArchive();
 
       expect(result).toBeNull();
+    });
+
+    it('should not return promos that ended less than 1 month ago', async () => {
+      // Ce test vérifie la logique: la méthode ne devrait pas retourner
+      // de promos dont la dateFin est récente (< 1 mois)
+      mockQueryBuilder.getMany.mockResolvedValue([]);
+
+      const result = await service.findPromoToArchive();
+
+      expect(result).toBeNull();
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'promo.dateFin < :oneMonthAgo',
+        expect.any(Object),
+      );
     });
   });
 });
