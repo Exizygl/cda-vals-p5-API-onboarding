@@ -84,18 +84,23 @@ describe('PromoService', () => {
     });
   });
 
-  describe('update', () => {
-    it('should save the promo with given id', async () => {
-      const dto = { nom: 'Updated Promo' } as any;
-      const updatedPromo = { id: '1', ...dto } as Promo;
-      repo.save.mockResolvedValue(updatedPromo);
-      const result = await service.update('1', dto);
-      expect(repo.save).toHaveBeenCalledWith({ ...dto, id: '1' });
-      expect(result).toEqual(updatedPromo);
-    });
-  });
+describe('update', () => {
+  it('should save the promo with given id', async () => {
+    const dto = { nom: 'Updated Promo' } as any;
+    const updatedPromo = { id: '1', ...dto } as Promo;
 
-  // ========== MISSING TESTS ==========
+    repo.save.mockResolvedValue(updatedPromo);
+
+    const result = await service.update('1', dto);
+
+    expect(repo.save).toHaveBeenCalledWith({ ...dto, id: '1' });
+    expect(result).toEqual(updatedPromo);
+  });
+});
+
+
+
+ 
 
   describe('findByIds', () => {
     it('should return promos matching the given ids', async () => {

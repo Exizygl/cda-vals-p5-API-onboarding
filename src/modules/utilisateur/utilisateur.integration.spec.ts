@@ -39,13 +39,13 @@ describe('UtilisateurService (Integration)', () => {
     const roleService = moduleRef.get(IRoleServiceToken);
 
     const role = new Role();
-    role.id = '1113002409883602974';
+    role.id = '111300240988360';
     role.nom = 'Admin';
     role.selectionnable = false;
     const savedRole = await roleService.create(role);
 
     const dto = {
-      id: '111300240988360297',
+      id: '111300240988360',
       nom: 'Doa',
       prenom: 'Jona',
       rolesId: [savedRole.id],
@@ -62,34 +62,33 @@ describe('UtilisateurService (Integration)', () => {
   it('should update only the nom of an existing user', async () => {
   const roleService = moduleRef.get(IRoleServiceToken);
 
-  // 1. Create a role
+
   const role = new Role();
-  role.id = '1113002409883602974';
+  role.id = '111300240988360';
   role.nom = 'Admin';
   role.selectionnable = false;
   const savedRole = await roleService.create(role);
 
-  // 2. Create a user
+
   const createDto = {
-    id: '111300240988360287',
+    id: '111300240988360',
     nom: 'Dou',
     prenom: 'Jona',
     rolesId: [savedRole.id],
   };
   const createdUser = await service.create(createDto);
-  
-  // 3. Update only the `nom`
+
   const updateDto = { nom: 'UpdatedName' };
   const updatedUser = await service.update(createdUser.id, updateDto);
 
-  // 4. Fetch from DB to ensure persistence
+
   const userInDb = await utilisateurRepository.findOne({
     where: { id: createdUser.id },
   });
 
-  // 5. Assertions
+
   expect(updatedUser.nom).toBe('UpdatedName');
-  expect(updatedUser.prenom).toBe('Jona'); // unchanged
+  expect(updatedUser.prenom).toBe('Jona'); 
   expect(userInDb?.nom).toBe('UpdatedName');
   expect(userInDb?.prenom).toBe('Jona');
 });

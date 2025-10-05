@@ -42,10 +42,10 @@ export class PromoController {
 
 
   @Get('to-archive')
-  async findPromoToArchive(): Promise<Promo[] | null> {
-    return this.promoService.findPromoToArchive();
-  }
-
+  async findPromoToArchive(): Promise<Promo[]> {
+    const promos = await this.promoService.findPromoToArchive();
+    return promos ?? [];
+}
 
   @Get('by-ids')
   async findByIds(

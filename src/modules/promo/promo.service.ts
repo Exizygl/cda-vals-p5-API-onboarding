@@ -60,35 +60,35 @@ export class PromoService implements IPromoService {
     return promo;
   }
 
-  async findPromoToStart(): Promise<Promo[] | null> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+async findPromoToStart(): Promise<Promo[] | null> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    const promos = await this.promoRepository
-      .createQueryBuilder('promo')
-      .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
-      .leftJoinAndSelect('promo.identifications', 'identification')
-      .leftJoinAndSelect(
-        'identification.statutidentification',
-        'statutIdentification',
-      )
-      .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
-      .leftJoinAndSelect('utilisateur.roles', 'role')
-      .where('statutPromo.libelle = :promoLibelle', {
-        promoLibelle: 'En attente',
-      })
-      .andWhere('promo.dateDebut <= :today', { today })
-      .andWhere('statutIdentification.libelle = :statutLibelle', {
-        statutLibelle: 'Accepté',
-      })
-      .orderBy('promo.dateDebut', 'ASC')
-      .getMany();
+  const promos = await this.promoRepository
+    .createQueryBuilder('promo')
+    .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
+    .leftJoinAndSelect('promo.identifications', 'identification')
+    .leftJoinAndSelect(
+      'identification.statutIdentification',
+      'statutIdentification',
+    )
+    .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
+    .leftJoinAndSelect('utilisateur.roles', 'role')
+    .where('statutPromo.libelle = :promoLibelle', {
+      promoLibelle: 'En attente',
+    })
+    .andWhere('promo.dateDebut <= :today', { today })
+    .andWhere('statutIdentification.libelle = :statutLibelle', {
+      statutLibelle: 'Accepté',
+    })
+    .orderBy('promo.dateDebut', 'ASC')
+    .getMany();
 
-    return promos.length > 0 ? promos : null;
-  }
+  return promos.length > 0 ? promos : null;
+}
 
 async findPromoToArchive(): Promise<Promo[] | null> {
-
+  
   const oneMonthAgo = new Date();
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
   oneMonthAgo.setHours(0, 0, 0, 0);
@@ -97,10 +97,10 @@ async findPromoToArchive(): Promise<Promo[] | null> {
     .createQueryBuilder('promo')
     .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
     .leftJoinAndSelect('promo.identifications', 'identification')
-    .leftJoinAndSelect('identification.statutidentification', 'statutIdentification')
+    .leftJoinAndSelect('identification.statutIdentification', 'statutIdentification')
     .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
     .leftJoinAndSelect('utilisateur.roles', 'role')
-    .where('statutPromo.libelle = :promoLibelle', { promoLibelle: 'actif' }) 
+    .where('statutPromo.libelle = :promoLibelle', { promoLibelle: 'actif' })
     .andWhere('promo.dateFin < :oneMonthAgo', { oneMonthAgo })
     .andWhere('statutIdentification.libelle = :statutLibelle', { statutLibelle: 'Accepté' })
     .orderBy('promo.dateFin', 'ASC')
@@ -108,6 +108,7 @@ async findPromoToArchive(): Promise<Promo[] | null> {
 
   return promos.length > 0 ? promos : null;
 }
+
   async create(dto: CreatePromoDto): Promise<Promo> {
     const statutEnAttente =
       await this.StatutPromoService.findByLibelle('En attente');
@@ -121,7 +122,7 @@ async findPromoToArchive(): Promise<Promo[] | null> {
     return this.promoRepository.save(promo);
   }
 
-  update(id: string, dto: UpdatePromoDto): Promise<Promo> {
-    return this.promoRepository.save({ ...dto, id });
-  }
+async update(id: string, dto: UpdatePromoDto): Promise<Promo> {
+  return await this.promoRepository.save({ ...dto, id });
+}
 }
