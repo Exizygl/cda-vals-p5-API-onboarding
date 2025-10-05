@@ -88,6 +88,11 @@ export class PromoService implements IPromoService {
   }
 
 async findPromoToArchive(): Promise<Promo[] | null> {
+
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  oneMonthAgo.setHours(0, 0, 0, 0);
+
   const promos = await this.promoRepository
     .createQueryBuilder('promo')
     .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
@@ -95,14 +100,14 @@ async findPromoToArchive(): Promise<Promo[] | null> {
     .leftJoinAndSelect('identification.statutidentification', 'statutIdentification')
     .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
     .leftJoinAndSelect('utilisateur.roles', 'role')
-    .where('statutPromo.libelle = :promoLibelle', { promoLibelle: 'Archivé' })
+    .where('statutPromo.libelle = :promoLibelle', { promoLibelle: 'actif' }) 
+    .andWhere('promo.dateFin < :oneMonthAgo', { oneMonthAgo })
     .andWhere('statutIdentification.libelle = :statutLibelle', { statutLibelle: 'Accepté' })
-    .orderBy('promo.dateDebut', 'DESC')
+    .orderBy('promo.dateFin', 'ASC')
     .getMany(); 
 
   return promos.length > 0 ? promos : null;
 }
-
   async create(dto: CreatePromoDto): Promise<Promo> {
     const statutEnAttente =
       await this.StatutPromoService.findByLibelle('En attente');
