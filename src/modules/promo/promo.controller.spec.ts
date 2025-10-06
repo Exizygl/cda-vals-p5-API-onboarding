@@ -340,7 +340,7 @@ describe('PromoController (Unit)', () => {
 
       const result = await controller.findPromoToArchive();
 
-      expect(result).toBeNull();
+       expect(result).toEqual([]);
       expect(service.findPromoToArchive).toHaveBeenCalledTimes(1);
     });
 

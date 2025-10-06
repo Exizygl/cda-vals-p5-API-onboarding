@@ -87,27 +87,26 @@ async findPromoToStart(): Promise<Promo[] | null> {
   return promos.length > 0 ? promos : null;
 }
 
-async findPromoToArchive(): Promise<Promo[] | null> {
-  
+
+async findPromoToArchive() {
   const oneMonthAgo = new Date();
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  oneMonthAgo.setHours(0, 0, 0, 0);
 
   const promos = await this.promoRepository
     .createQueryBuilder('promo')
-    .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
-    .leftJoinAndSelect('promo.identifications', 'identification')
-    .leftJoinAndSelect('identification.statutIdentification', 'statutIdentification')
-    .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
-    .leftJoinAndSelect('utilisateur.roles', 'role')
-    .where('statutPromo.libelle = :promoLibelle', { promoLibelle: 'actif' })
+    .leftJoinAndSelect('promo.statutPromo', 'statutPromo')
+    .leftJoinAndSelect('promo.identifications', 'identifications')
+    .leftJoinAndSelect('identifications.statutIdentification', 'statutIdentification')
+    .where('statutPromo.libelle = :actif', { actif: 'actif' })
     .andWhere('promo.dateFin < :oneMonthAgo', { oneMonthAgo })
-    .andWhere('statutIdentification.libelle = :statutLibelle', { statutLibelle: 'Accepté' })
+    .andWhere('statutIdentification.libelle = :accepted', { accepted: 'Accepté' })
     .orderBy('promo.dateFin', 'ASC')
-    .getMany(); 
+    .getMany();
 
-  return promos.length > 0 ? promos : null;
+  return promos.length ? promos : null; 
 }
+
+
 
   async create(dto: CreatePromoDto): Promise<Promo> {
     const statutEnAttente =

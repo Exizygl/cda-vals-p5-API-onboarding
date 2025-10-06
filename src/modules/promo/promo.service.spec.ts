@@ -322,11 +322,11 @@ describe('update', () => {
           id: '1',
           nom: 'Promo 1',
           dateDebut: new Date('2024-01-01'),
-          dateFin: new Date('2024-10-01'), // Terminée il y a plus d'1 mois
+          dateFin: new Date('2024-10-01'), 
           snowflake: '789012',
           dateCreation: new Date(),
           dateModification: new Date(),
-          statutPromo: { libelle: 'actif' } as any, // ✅ Promo ACTIVE
+          statutPromo: { libelle: 'actif' } as any, 
           formation: {} as any,
           campus: {} as any,
           identifications: [
@@ -344,14 +344,15 @@ describe('update', () => {
 
       expect(result).toEqual(promosToArchive);
       expect(repo.createQueryBuilder).toHaveBeenCalledWith('promo');
-      expect(mockQueryBuilder.innerJoinAndSelect).toHaveBeenCalledWith(
+      expect(mockQueryBuilder.leftJoinAndSelect).toHaveBeenCalledWith(
         'promo.statutPromo',
         'statutPromo',
       );
       expect(mockQueryBuilder.where).toHaveBeenCalledWith(
-        'statutPromo.libelle = :promoLibelle',
-        { promoLibelle: 'actif' }, // ✅ Cherche les promos ACTIVES
+        'statutPromo.libelle = :actif',
+        { actif: 'actif' },
       );
+
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'promo.dateFin < :oneMonthAgo',
         expect.objectContaining({ oneMonthAgo: expect.any(Date) }),
@@ -371,8 +372,6 @@ describe('update', () => {
     });
 
     it('should not return promos that ended less than 1 month ago', async () => {
-      // Ce test vérifie la logique: la méthode ne devrait pas retourner
-      // de promos dont la dateFin est récente (< 1 mois)
       mockQueryBuilder.getMany.mockResolvedValue([]);
 
       const result = await service.findPromoToArchive();
