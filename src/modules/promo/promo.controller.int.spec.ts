@@ -67,11 +67,11 @@ describe('PromoController (Integration with PostgreSQL)', () => {
 
     statutActif = await dataSource.getRepository(StatutPromo).save({ libelle: 'actif' });
     statutEnAttente = await dataSource.getRepository(StatutPromo).save({ libelle: 'En attente' });
-    statutArchive = await dataSource.getRepository(StatutPromo).save({ libelle: 'Archivé' });
+    statutArchive = await dataSource.getRepository(StatutPromo).save({ libelle: 'archiver' });
 
 
     statutIdentificationAccepte = await dataSource.getRepository(StatutIdentification).save({ 
-      libelle: 'Accepté' 
+      libelle: 'accepter' 
     });
 
 
@@ -252,64 +252,68 @@ describe('PromoController (Integration with PostgreSQL)', () => {
 });
 
 
-  describe('GET /promos/to-archive', () => {
-    it('should return active promos with end date older than 1 month', async () => {
-      const twoMonthsAgo = new Date();
-      twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+describe('GET /promos/to-archive', () => {
+  it('should return active promos with end date older than 1 month', async () => {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setDate(oneMonthAgo.getDate() - 31); // <-- strictement avant 1 mois
 
-      const utilisateur = await dataSource.getRepository(Utilisateur).save({
-        id: generateTestId(),
-        nom: 'Test',
-        prenom: 'User',
-        email: 'test@example.com',
-      });
-
-      const promo = await dataSource.getRepository(Promo).save({
-        nom: 'Promo à archiver',
-        dateDebut: new Date('2024-01-01'),
-        dateFin: twoMonthsAgo,
-        statutPromo: statutActif, 
-        formation,
-        campus,
-      });
-
-      await dataSource.getRepository(Identification).save({
-        promo,
-        utilisateur,
-        statutidentification: statutIdentificationAccepte,
-      });
-
-      const res = await request(app.getHttpServer())
-        .get('/promos/to-archive')
-        .expect(200);
-
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBeGreaterThan(0);
-      expect(res.body[0].nom).toBe('Promo à archiver');
-      expect(res.body[0].statutPromo.libelle).toBe('actif');
+    // Créer l'utilisateur
+    const utilisateur = await dataSource.getRepository(Utilisateur).save({
+      id: generateTestId(),
+      nom: 'Test',
+      prenom: 'User',
+      email: 'test@example.com',
     });
 
-    it('should not return promos that ended less than 1 month ago', async () => {
-      const twoDaysAgo = new Date();
-      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-
-      await dataSource.getRepository(Promo).save({
-        nom: 'Promo récente',
-        dateDebut: new Date('2025-01-01'),
-        dateFin: twoDaysAgo,
-        statutPromo: statutActif,
-        formation,
-        campus,
-      });
-
-      const res = await request(app.getHttpServer())
-        .get('/promos/to-archive')
-        .expect(200);
-
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBe(0);
+    // Créer la promo
+    const promo = await dataSource.getRepository(Promo).save({
+      nom: 'Promo à archiver',
+      dateDebut: new Date('2024-01-01'),
+      dateFin: oneMonthAgo,
+      statutPromo: statutActif,
+      formation,
+      campus,
     });
+
+    // Créer l'identification avec la **propriété correcte**
+    await dataSource.getRepository(Identification).save({
+      promo,
+      utilisateur,
+      statutIdentification: statutIdentificationAccepte, // <-- correction
+    });
+
+    const res = await request(app.getHttpServer())
+      .get('/promos/to-archive')
+      .expect(200);
+
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0].nom).toBe('Promo à archiver');
+    expect(res.body[0].statutPromo.libelle).toBe('actif');
   });
+
+  it('should not return promos that ended less than 1 month ago', async () => {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    await dataSource.getRepository(Promo).save({
+      nom: 'Promo récente',
+      dateDebut: new Date('2025-01-01'),
+      dateFin: twoDaysAgo,
+      statutPromo: statutActif,
+      formation,
+      campus,
+    });
+
+    const res = await request(app.getHttpServer())
+      .get('/promos/to-archive')
+      .expect(200);
+
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(0);
+  });
+});
+
 
   describe('GET /promos/by-ids', () => {
     it('should return promos matching the given ids', async () => {
@@ -448,53 +452,72 @@ describe('PromoController (Integration with PostgreSQL)', () => {
 });
 
 
-  describe('PATCH /promos/:id', () => {
-    it('should update a promo', async () => {
+describe('PATCH /promos/:id', () => {
+  it('should update a promo', async () => {
     const promo = await dataSource.getRepository(Promo).save({
-    nom: 'Promo Original',
-    dateDebut: new Date('2025-01-01'),
-    dateFin: new Date('2025-12-31'),
-    statutPromo: statutActif,
-    formation,
-    campus,
+      nom: 'Promo Original',
+      dateDebut: new Date('2025-01-01'),
+      dateFin: new Date('2025-12-31'),
+      statutPromo: statutActif,
+      formation,
+      campus,
     });
 
     const updateDto = { nom: 'Promo Updated' };
 
-    await request(app.getHttpServer())
-    .patch(`/promos/${promo.id}`)
-    .send(updateDto)
-    .expect(200);
+    // 🔹 Envoie la requête PATCH
+    const res = await request(app.getHttpServer())
+      .patch(`/promos/${promo.id}`)
+      .send(updateDto)
+      .expect(200);
 
+    // 🔹 Vérifie la réponse directe de l’API
+    expect(res.body).toBeDefined();
+    expect(res.body.nom).toBe('Promo Updated');
+
+    // 🔹 Vérifie la valeur réellement mise à jour en base
     const updatedPromo = await dataSource.getRepository(Promo).findOne({
-    where: { id: promo.id },
+      where: { id: promo.id },
+      relations: ['statutPromo', 'formation', 'campus'],
     });
 
+    expect(updatedPromo).not.toBeNull();
     expect(updatedPromo!.nom).toBe('Promo Updated');
-    });
-
-
-    it('should update only specified fields', async () => {
-      const promo = await dataSource.getRepository(Promo).save({
-        nom: 'Promo Original',
-        dateDebut: new Date('2025-01-01'),
-        dateFin: new Date('2025-12-31'),
-        statutPromo: statutActif,
-        formation,
-        campus,
-      });
-
-      const updateDto = {
-        dateFin: new Date('2026-06-30'),
-      };
-
-      const res = await request(app.getHttpServer())
-        .patch(`/promos/${promo.id}`)
-        .send(updateDto)
-        .expect(200);
-
-      expect(res.body.nom).toBe('Promo Original'); 
-      expect(new Date(res.body.dateFin).getFullYear()).toBe(2026);
-    });
   });
+
+  it('should update only specified fields', async () => {
+    const promo = await dataSource.getRepository(Promo).save({
+      nom: 'Promo Original',
+      dateDebut: new Date('2025-01-01'),
+      dateFin: new Date('2025-12-31'),
+      statutPromo: statutActif,
+      formation,
+      campus,
+    });
+
+    const updateDto = {
+      dateFin: new Date('2026-06-30'),
+    };
+
+   
+    const res = await request(app.getHttpServer())
+      .patch(`/promos/${promo.id}`)
+      .send(updateDto)
+      .expect(200);
+
+ 
+    expect(res.body).toBeDefined();
+    expect(res.body.nom).toBe('Promo Original');
+    expect(new Date(res.body.dateFin).getFullYear()).toBe(2026);
+
+   
+    const updatedPromo = await dataSource.getRepository(Promo).findOne({
+      where: { id: promo.id },
+    });
+
+    expect(updatedPromo!.nom).toBe('Promo Original');
+    expect(new Date(updatedPromo!.dateFin).getFullYear()).toBe(2026);
+  });
+});
+
 });
