@@ -14,6 +14,7 @@ const createMockRepo = (): MockType<Repository<any>> => ({
   findBy: jest.fn(),
   findOne: jest.fn(),
   save: jest.fn(),
+  update: jest.fn(),
   createQueryBuilder: jest.fn(),
 } as any);
 
@@ -85,18 +86,27 @@ describe('PromoService', () => {
   });
 
 describe('update', () => {
-  it('should save the promo with given id', async () => {
+  it('should update the promo with given id', async () => {
     const dto = { nom: 'Updated Promo' } as any;
+    const existingPromo = { id: '1', nom: 'Old Promo' } as Promo;
     const updatedPromo = { id: '1', ...dto } as Promo;
 
-    repo.save.mockResolvedValue(updatedPromo);
+    repo.findOne.mockResolvedValue(existingPromo);
+    repo.update.mockResolvedValue(undefined); // update() return type Promise<UpdateResult>, mock ici void
+    repo.findOne.mockResolvedValue(updatedPromo); // reload après update()
 
     const result = await service.update('1', dto);
 
-    expect(repo.save).toHaveBeenCalledWith({ ...dto, id: '1' });
+    expect(repo.findOne).toHaveBeenCalledWith({
+      where: { id: '1' },
+      relations: ['statutPromo', 'formation', 'campus'],
+    });
+    expect(repo.update).toHaveBeenCalledWith('1', dto);
     expect(result).toEqual(updatedPromo);
   });
 });
+
+
 
 
 

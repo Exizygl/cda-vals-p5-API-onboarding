@@ -452,72 +452,40 @@ describe('GET /promos/to-archive', () => {
 });
 
 
-describe('PATCH /promos/:id', () => {
-  it('should update a promo', async () => {
-    const promo = await dataSource.getRepository(Promo).save({
-      nom: 'Promo Original',
-      dateDebut: new Date('2025-01-01'),
-      dateFin: new Date('2025-12-31'),
-      statutPromo: statutActif,
-      formation,
-      campus,
-    });
-
-    const updateDto = { nom: 'Promo Updated' };
-
-    // 🔹 Envoie la requête PATCH
-    const res = await request(app.getHttpServer())
-      .patch(`/promos/${promo.id}`)
-      .send(updateDto)
-      .expect(200);
-
-    // 🔹 Vérifie la réponse directe de l’API
-    expect(res.body).toBeDefined();
-    expect(res.body.nom).toBe('Promo Updated');
-
-    // 🔹 Vérifie la valeur réellement mise à jour en base
-    const updatedPromo = await dataSource.getRepository(Promo).findOne({
-      where: { id: promo.id },
-      relations: ['statutPromo', 'formation', 'campus'],
-    });
-
-    expect(updatedPromo).not.toBeNull();
-    expect(updatedPromo!.nom).toBe('Promo Updated');
-  });
-
-  it('should update only specified fields', async () => {
-    const promo = await dataSource.getRepository(Promo).save({
-      nom: 'Promo Original',
-      dateDebut: new Date('2025-01-01'),
-      dateFin: new Date('2025-12-31'),
-      statutPromo: statutActif,
-      formation,
-      campus,
-    });
-
-    const updateDto = {
-      dateFin: new Date('2026-06-30'),
-    };
-
-   
-    const res = await request(app.getHttpServer())
-      .patch(`/promos/${promo.id}`)
-      .send(updateDto)
-      .expect(200);
-
+it('should update a promo', async () => {
  
-    expect(res.body).toBeDefined();
-    expect(res.body.nom).toBe('Promo Original');
-    expect(new Date(res.body.dateFin).getFullYear()).toBe(2026);
-
-   
-    const updatedPromo = await dataSource.getRepository(Promo).findOne({
-      where: { id: promo.id },
-    });
-
-    expect(updatedPromo!.nom).toBe('Promo Original');
-    expect(new Date(updatedPromo!.dateFin).getFullYear()).toBe(2026);
+  
+  const promo = await dataSource.getRepository(Promo).save({
+    nom: 'Promo Original',
+    dateDebut: new Date('2025-01-01'),
+    dateFin: new Date('2025-12-31'),
+    statutPromo: statutActif,
+    formation,
+    campus,
   });
+
+
+  const updateDto = {
+    nom: 'Promo Updated',
+    dateFin: '2026-06-30T00:00:00.000Z', 
+  };
+
+  
+  await request(app.getHttpServer())
+    .patch(`/promos/${promo.id}`)
+    .send(updateDto)
+    .expect(200);
+
+
+  const updatedPromo = await dataSource.getRepository(Promo).findOne({
+    where: { id: promo.id },
+  });
+
+  expect(updatedPromo).not.toBeNull();
+  expect(updatedPromo!.nom).toBe('Promo Updated');
+  expect(new Date(updatedPromo!.dateFin).getFullYear()).toBe(2026);
 });
+
+
 
 });

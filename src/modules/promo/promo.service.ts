@@ -125,18 +125,22 @@ async findPromoToArchive() {
   }
 
   async update(id: string, dto: UpdatePromoDto): Promise<Promo> {
-    const promo = await this.promoRepository.findOne({
-      where: { id },
-      relations: ['statutPromo', 'formation', 'campus'], // si ton test les utilise
-    });
-  
-    if (!promo) {
-      throw new NotFoundException(`Promo with id ${id} not found`);
-    }
-  
-    Object.assign(promo, dto);
-  
-    return await this.promoRepository.save(promo);
+  const promoExists = await this.promoRepository.findOne({ where: { id } });
+  if (!promoExists) {
+    throw new NotFoundException(`Promo with id ${id} not found`);
   }
-  
+
+  await this.promoRepository.update(id, dto); 
+
+
+  const refreshed = await this.promoRepository.findOne({
+    where: { id },
+    relations: ['statutPromo', 'formation', 'campus'],
+  });
+  if (!refreshed) {
+    throw new NotFoundException(`Promo with id ${id} not found after update`);
+  }
+  return refreshed;
+}
+
 }
