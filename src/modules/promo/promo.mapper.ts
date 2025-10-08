@@ -22,7 +22,7 @@ export class PromoMapper {
     statutPromoEntity?: StatutPromo, 
     identificationEntity?: Identification
   ): Promo {
-    // Update simple fields if provided
+
     if (dto.nom !== undefined) {
       existing.nom = dto.nom;
     }
@@ -36,14 +36,14 @@ export class PromoMapper {
       existing.snowflake = dto.snowflake;
     }
 
-    // Update statut: prioritize the resolved entity, fallback to dto
+
     if (statutPromoEntity !== undefined) {
       existing.statutPromo = statutPromoEntity;
     } else if (dto.statut !== undefined) {
       existing.statutPromo = dto.statut;
     }
 
-    // Update identifications: prioritize the resolved entity, fallback to dto
+ 
     if (identificationEntity !== undefined) {
       existing.identifications = [identificationEntity];
     } else if (dto.identification !== undefined) {

@@ -30,7 +30,7 @@ describe('PromoService', () => {
     } as Partial<jest.Mocked<IStatutPromoService>> as jest.Mocked<IStatutPromoService>;
     service = new PromoService(repo as any, statutPromoService);
     
-    // Clear all mocks before each test
+
     jest.clearAllMocks();
   });
 
@@ -117,31 +117,31 @@ describe('PromoService', () => {
         campus: {}
       } as Promo;
 
-      // First call: load existing
+
       repo.findOne.mockResolvedValueOnce(existingPromo);
       
-      // Save call
+
       repo.save.mockResolvedValueOnce(savedPromo);
       
-      // Second call: reload after save
+
       repo.findOne.mockResolvedValueOnce(reloadedPromo);
 
       const result = await service.update('1', dto);
 
-      // Verify first findOne call (load existing)
+
       expect(repo.findOne).toHaveBeenNthCalledWith(1, {
         where: { id: '1' },
         relations: ['statutPromo', 'formation', 'campus', 'identifications'],
       });
 
-      // Verify save was called with modified entity
+
       expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({
         id: '1',
         nom: 'Updated Promo',
         dateFin: dto.dateFin
       }));
 
-      // Verify second findOne call (reload)
+
       expect(repo.findOne).toHaveBeenNthCalledWith(2, {
         where: { id: '1' },
         relations: ['statutPromo', 'formation', 'campus', 'identifications'],
@@ -173,7 +173,7 @@ describe('PromoService', () => {
 
       await service.update('1', dto);
 
-      // Check that save was called with the entity having updated nom but same dates
+     
       expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({
         nom: 'Only Name Updated',
         dateDebut: existingPromo.dateDebut,
@@ -206,34 +206,34 @@ describe('PromoService', () => {
         campus: {}
       } as Promo;
 
-      // First call: load existing by snowflake
+  
       repo.findOne.mockResolvedValueOnce(existingPromo);
       
-      // Save call returns the saved entity with id
+ 
       repo.save.mockResolvedValueOnce(savedPromo);
       
-      // Second call: reload by id after save
+ 
       repo.findOne.mockResolvedValueOnce(reloadedPromo);
 
       const result = await service.updateBySnowflake('abc123', dto);
 
-      // Verify calls
+ 
       expect(repo.findOne).toHaveBeenCalledTimes(2);
       
-      // First call loads by snowflake
+
       expect(repo.findOne).toHaveBeenNthCalledWith(1, {
         where: { snowflake: 'abc123' },
         relations: ['statutPromo', 'formation', 'campus', 'identifications'],
       });
 
-      // Verify save was called with modified entity
+    
       expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({
         id: '1',
         snowflake: 'abc123',
         nom: 'Updated via Snowflake'
       }));
 
-      // Second call reloads by id
+      
       expect(repo.findOne).toHaveBeenNthCalledWith(2, {
         where: { id: '1' },
         relations: ['statutPromo', 'formation', 'campus', 'identifications'],

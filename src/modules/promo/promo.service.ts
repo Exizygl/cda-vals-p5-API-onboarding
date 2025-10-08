@@ -126,7 +126,7 @@ export class PromoService implements IPromoService {
     return this.promoRepository.save(promo);
   }
 
-  // FIXED: Update by UUID
+
   async update(id: string, dto: UpdatePromoDto): Promise<Promo> {
     const existing = await this.promoRepository.findOne({ 
       where: { id },
@@ -137,13 +137,13 @@ export class PromoService implements IPromoService {
       throw new NotFoundException(`Promo with id ${id} not found`);
     }
 
-    // Handle statut relation if provided in DTO
+  
     let statutPromoEntity;
     if (dto.statut?.libelle) {
       statutPromoEntity = await this.StatutPromoService.findByLibelle(dto.statut.libelle);
     }
 
-    // Apply updates to existing entity
+
     if (dto.nom !== undefined) existing.nom = dto.nom;
     if (dto.dateDebut !== undefined) existing.dateDebut = dto.dateDebut;
     if (dto.dateFin !== undefined) existing.dateFin = dto.dateFin;
@@ -159,10 +159,10 @@ export class PromoService implements IPromoService {
       existing.identifications = [dto.identification];
     }
 
-    // Save the modified entity
+
     const saved = await this.promoRepository.save(existing);
     
-    // Reload to ensure all relations are fresh
+
     const reloaded = await this.promoRepository.findOne({
       where: { id: saved.id },
       relations: ['statutPromo', 'formation', 'campus', 'identifications']
@@ -175,7 +175,7 @@ export class PromoService implements IPromoService {
     return reloaded;
   }
 
-  // NEW: Update by Snowflake
+
   async updateBySnowflake(snowflake: string, dto: UpdatePromoDto): Promise<Promo> {
     const existing = await this.promoRepository.findOne({ 
       where: { snowflake },
@@ -186,13 +186,13 @@ export class PromoService implements IPromoService {
       throw new NotFoundException(`Promo with snowflake ${snowflake} not found`);
     }
 
-    // Handle statut relation if provided in DTO
+
     let statutPromoEntity;
     if (dto.statut?.libelle) {
       statutPromoEntity = await this.StatutPromoService.findByLibelle(dto.statut.libelle);
     }
 
-    // Apply updates to existing entity
+
     if (dto.nom !== undefined) existing.nom = dto.nom;
     if (dto.dateDebut !== undefined) existing.dateDebut = dto.dateDebut;
     if (dto.dateFin !== undefined) existing.dateFin = dto.dateFin;
@@ -208,10 +208,10 @@ export class PromoService implements IPromoService {
       existing.identifications = [dto.identification];
     }
 
-    // Save the modified entity
+
     const saved = await this.promoRepository.save(existing);
     
-    // Reload to ensure all relations are fresh
+
     return this.promoRepository.findOne({
       where: { id: saved.id },
       relations: ['statutPromo', 'formation', 'campus', 'identifications']
