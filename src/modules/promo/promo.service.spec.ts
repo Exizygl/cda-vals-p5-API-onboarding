@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { PromoService } from './promo.service';
 import { Promo } from './promo.entity';
 import { PromoMapper } from './promo.mapper';
-import { Repository, In, SelectQueryBuilder } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { IStatutPromoService } from '../statut-promo/interface/IStatutPromoService';
 
 type MockType<T> = {
@@ -29,16 +29,21 @@ describe('PromoService', () => {
       findByLibelle: jest.fn(),
     } as Partial<jest.Mocked<IStatutPromoService>> as jest.Mocked<IStatutPromoService>;
     service = new PromoService(repo as any, statutPromoService);
+    
+    // Clear all mocks before each test
+    jest.clearAllMocks();
   });
 
-  // EXISTING TESTS
   describe('findOne', () => {
     it('should return a promo when found', async () => {
       const promo = { id: '1' } as Promo;
       repo.findOne.mockResolvedValue(promo);
       const result = await service.findOne('1');
       expect(result).toEqual(promo);
-      expect(repo.findOne).toHaveBeenCalledWith({ where: { id: '1' } });
+      expect(repo.findOne).toHaveBeenCalledWith({ 
+        where: { id: '1' },
+        relations: ['statutPromo', 'formation', 'campus', 'identifications']
+      });
     });
 
     it('should throw NotFoundException when not found', async () => {
@@ -53,7 +58,10 @@ describe('PromoService', () => {
       repo.findOne.mockResolvedValue(promo);
       const result = await service.findOneBySnowflake('abc');
       expect(result).toEqual(promo);
-      expect(repo.findOne).toHaveBeenCalledWith({ where: { snowflake: 'abc' } });
+      expect(repo.findOne).toHaveBeenCalledWith({ 
+        where: { snowflake: 'abc' },
+        relations: ['statutPromo', 'formation', 'campus', 'identifications']
+      });
     });
 
     it('should throw NotFoundException when not found', async () => {
@@ -85,32 +93,162 @@ describe('PromoService', () => {
     });
   });
 
-describe('update', () => {
-  it('should update the promo with given id', async () => {
-    const dto = { nom: 'Updated Promo' } as any;
-    const existingPromo = { id: '1', nom: 'Old Promo' } as Promo;
-    const updatedPromo = { id: '1', ...dto } as Promo;
+  describe('update', () => {
+    it('should update the promo with given id', async () => {
+      const dto = { nom: 'Updated Promo', dateFin: new Date('2026-12-31') } as any;
+      const existingPromo = { 
+        id: '1', 
+        nom: 'Old Promo',
+        dateFin: new Date('2025-12-31'),
+        statutPromo: { libelle: 'actif' }
+      } as Promo;
+      const savedPromo = { 
+        id: '1', 
+        nom: 'Updated Promo',
+        dateFin: new Date('2026-12-31'),
+        statutPromo: { libelle: 'actif' }
+      } as Promo;
+      const reloadedPromo = { 
+        id: '1', 
+        nom: 'Updated Promo',
+        dateFin: new Date('2026-12-31'),
+        statutPromo: { libelle: 'actif' },
+        formation: {},
+        campus: {}
+      } as Promo;
 
-    repo.findOne.mockResolvedValue(existingPromo);
-    repo.update.mockResolvedValue(undefined); // update() return type Promise<UpdateResult>, mock ici void
-    repo.findOne.mockResolvedValue(updatedPromo); // reload après update()
+      // First call: load existing
+      repo.findOne.mockResolvedValueOnce(existingPromo);
+      
+      // Save call
+      repo.save.mockResolvedValueOnce(savedPromo);
+      
+      // Second call: reload after save
+      repo.findOne.mockResolvedValueOnce(reloadedPromo);
 
-    const result = await service.update('1', dto);
+      const result = await service.update('1', dto);
 
-    expect(repo.findOne).toHaveBeenCalledWith({
-      where: { id: '1' },
-      relations: ['statutPromo', 'formation', 'campus'],
+      // Verify first findOne call (load existing)
+      expect(repo.findOne).toHaveBeenNthCalledWith(1, {
+        where: { id: '1' },
+        relations: ['statutPromo', 'formation', 'campus', 'identifications'],
+      });
+
+      // Verify save was called with modified entity
+      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({
+        id: '1',
+        nom: 'Updated Promo',
+        dateFin: dto.dateFin
+      }));
+
+      // Verify second findOne call (reload)
+      expect(repo.findOne).toHaveBeenNthCalledWith(2, {
+        where: { id: '1' },
+        relations: ['statutPromo', 'formation', 'campus', 'identifications'],
+      });
+
+      expect(result).toEqual(reloadedPromo);
     });
-    expect(repo.update).toHaveBeenCalledWith('1', dto);
-    expect(result).toEqual(updatedPromo);
+
+    it('should throw NotFoundException when promo not found', async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.update('999', { nom: 'Test' })).rejects.toThrow(
+        NotFoundException
+      );
+    });
+
+    it('should only update provided fields', async () => {
+      const dto = { nom: 'Only Name Updated' } as any;
+      const existingPromo = { 
+        id: '1', 
+        nom: 'Old Name',
+        dateDebut: new Date('2025-01-01'),
+        dateFin: new Date('2025-12-31'),
+        statutPromo: { libelle: 'actif' }
+      } as Promo;
+
+      repo.findOne.mockResolvedValueOnce(existingPromo);
+      repo.save.mockResolvedValueOnce({ ...existingPromo, nom: 'Only Name Updated' });
+      repo.findOne.mockResolvedValueOnce({ ...existingPromo, nom: 'Only Name Updated' });
+
+      await service.update('1', dto);
+
+      // Check that save was called with the entity having updated nom but same dates
+      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({
+        nom: 'Only Name Updated',
+        dateDebut: existingPromo.dateDebut,
+        dateFin: existingPromo.dateFin
+      }));
+    });
   });
-});
 
+  describe('updateBySnowflake', () => {
+    it('should update the promo with given snowflake', async () => {
+      const dto = { nom: 'Updated via Snowflake' } as any;
+      const existingPromo = { 
+        id: '1',
+        snowflake: 'abc123',
+        nom: 'Old Promo',
+        statutPromo: { libelle: 'actif' }
+      } as Promo;
+      const savedPromo = { 
+        id: '1',
+        snowflake: 'abc123',
+        nom: 'Updated via Snowflake',
+        statutPromo: { libelle: 'actif' }
+      } as Promo;
+      const reloadedPromo = { 
+        id: '1',
+        snowflake: 'abc123',
+        nom: 'Updated via Snowflake',
+        statutPromo: { libelle: 'actif' },
+        formation: {},
+        campus: {}
+      } as Promo;
 
+      // First call: load existing by snowflake
+      repo.findOne.mockResolvedValueOnce(existingPromo);
+      
+      // Save call returns the saved entity with id
+      repo.save.mockResolvedValueOnce(savedPromo);
+      
+      // Second call: reload by id after save
+      repo.findOne.mockResolvedValueOnce(reloadedPromo);
 
+      const result = await service.updateBySnowflake('abc123', dto);
 
+      // Verify calls
+      expect(repo.findOne).toHaveBeenCalledTimes(2);
+      
+      // First call loads by snowflake
+      expect(repo.findOne).toHaveBeenNthCalledWith(1, {
+        where: { snowflake: 'abc123' },
+        relations: ['statutPromo', 'formation', 'campus', 'identifications'],
+      });
 
- 
+      // Verify save was called with modified entity
+      expect(repo.save).toHaveBeenCalledWith(expect.objectContaining({
+        id: '1',
+        snowflake: 'abc123',
+        nom: 'Updated via Snowflake'
+      }));
+
+      // Second call reloads by id
+      expect(repo.findOne).toHaveBeenNthCalledWith(2, {
+        where: { id: '1' },
+        relations: ['statutPromo', 'formation', 'campus', 'identifications'],
+      });
+
+      expect(result).toEqual(reloadedPromo);
+    });
+
+    it('should throw NotFoundException when snowflake not found', async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.updateBySnowflake('xyz', { nom: 'Test' })).rejects.toThrow(
+        NotFoundException
+      );
+    });
+  });
 
   describe('findByIds', () => {
     it('should return promos matching the given ids', async () => {

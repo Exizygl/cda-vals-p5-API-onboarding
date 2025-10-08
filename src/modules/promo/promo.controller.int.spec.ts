@@ -452,9 +452,10 @@ describe('GET /promos/to-archive', () => {
 });
 
 
+// Replace the existing update test with this version
+
 it('should update a promo', async () => {
- 
-  
+  // Create initial promo
   const promo = await dataSource.getRepository(Promo).save({
     nom: 'Promo Original',
     dateDebut: new Date('2025-01-01'),
@@ -464,28 +465,43 @@ it('should update a promo', async () => {
     campus,
   });
 
+  console.log('Created promo:', { id: promo.id, nom: promo.nom });
 
   const updateDto = {
     nom: 'Promo Updated',
-    dateFin: '2026-06-30T00:00:00.000Z', 
+    dateFin: '2026-06-30T00:00:00.000Z',
   };
 
-  
-  await request(app.getHttpServer())
+  // Call the update endpoint
+  const res = await request(app.getHttpServer())
     .patch(`/promos/${promo.id}`)
-    .send(updateDto)
-    .expect(200);
+    .send(updateDto);
 
+  // Log the response for debugging
+  if (res.status !== 200) {
+    console.log('Error response:', res.status, res.body);
+  }
+  
+  expect(res.status).toBe(200);
+  console.log('Response body:', res.body);
 
+  // Check response
+  expect(res.body.nom).toBe('Promo Updated');
+  expect(new Date(res.body.dateFin).getFullYear()).toBe(2026);
+
+  // Verify in database
   const updatedPromo = await dataSource.getRepository(Promo).findOne({
     where: { id: promo.id },
+  });
+
+  console.log('Updated promo from DB:', { 
+    id: updatedPromo?.id, 
+    nom: updatedPromo?.nom,
+    dateFin: updatedPromo?.dateFin
   });
 
   expect(updatedPromo).not.toBeNull();
   expect(updatedPromo!.nom).toBe('Promo Updated');
   expect(new Date(updatedPromo!.dateFin).getFullYear()).toBe(2026);
 });
-
-
-
 });
