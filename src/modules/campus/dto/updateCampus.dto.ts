@@ -11,5 +11,5 @@ export class UpdateCampusDto {
 
   @IsBoolean()
   @IsOptional()
-  selectionnable?: boolean;
+  actif?: boolean;
 }

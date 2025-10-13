@@ -11,5 +11,5 @@ export class UpdateFormationDto {
 
   @IsBoolean()
   @IsOptional()
-  selectionnable?: boolean;
+  actif?: boolean;
 }

@@ -14,6 +14,11 @@ export class CampusController {
     return this.campusService.findAll();
   }
 
+  @Get('actif')
+  async findActif() {
+    return this.campusService.findActif(); 
+  }
+  
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.campusService.findOne(id);
@@ -35,8 +40,4 @@ export class CampusController {
     return { message: 'Campus deleted successfully' };
   }
 
-    @Get('actif')
-  async findActif() {
-    return this.campusService.findActif(); 
-  }
 }

@@ -14,6 +14,11 @@ export class FormationController {
     return this.formationService.findAll();
   }
 
+  @Get('actif')
+  async findActif() {
+    return this.formationService.findActif(); 
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.formationService.findOne(id);
@@ -33,10 +38,5 @@ export class FormationController {
   async remove(@Param('id') id: string) {
     await this.formationService.remove(id);
     return { message: 'Formation deleted successfully' };
-  }
-
-    @Get('actif')
-  async findActif() {
-    return this.formationService.findActif(); 
   }
 }

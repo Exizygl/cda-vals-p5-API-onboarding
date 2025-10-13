@@ -452,56 +452,72 @@ describe('GET /promos/to-archive', () => {
 });
 
 
-// Replace the existing update test with this version
+describe('PATCH /promos/:id', () => {
+  it('should update a promo', async () => {
+    const promo = await dataSource.getRepository(Promo).save({
+      nom: 'Promo Original',
+      dateDebut: new Date('2025-01-01'),
+      dateFin: new Date('2025-12-31'),
+      statutPromo: statutActif,
+      formation,
+      campus,
+    });
 
-it('should update a promo', async () => {
-  // Create initial promo
-  const promo = await dataSource.getRepository(Promo).save({
-    nom: 'Promo Original',
-    dateDebut: new Date('2025-01-01'),
-    dateFin: new Date('2025-12-31'),
-    statutPromo: statutActif,
-    formation,
-    campus,
+    const updateDto = { nom: 'Promo Updated' };
+
+    // 🔹 Envoie la requête PATCH
+    const res = await request(app.getHttpServer())
+      .patch(`/promos/${promo.id}`)
+      .send(updateDto)
+      .expect(200);
+
+    // 🔹 Vérifie la réponse directe de l’API
+    expect(res.body).toBeDefined();
+    expect(res.body.nom).toBe('Promo Updated');
+
+    // 🔹 Vérifie la valeur réellement mise à jour en base
+    const updatedPromo = await dataSource.getRepository(Promo).findOne({
+      where: { id: promo.id },
+      relations: ['statutPromo', 'formation', 'campus'],
+    });
+
+    expect(updatedPromo).not.toBeNull();
+    expect(updatedPromo!.nom).toBe('Promo Updated');
   });
 
-  console.log('Created promo:', { id: promo.id, nom: promo.nom });
+  it('should update only specified fields', async () => {
+    const promo = await dataSource.getRepository(Promo).save({
+      nom: 'Promo Original',
+      dateDebut: new Date('2025-01-01'),
+      dateFin: new Date('2025-12-31'),
+      statutPromo: statutActif,
+      formation,
+      campus,
+    });
 
-  const updateDto = {
-    nom: 'Promo Updated',
-    dateFin: '2026-06-30T00:00:00.000Z',
-  };
+    const updateDto = {
+      dateFin: new Date('2026-06-30'),
+    };
 
-  // Call the update endpoint
-  const res = await request(app.getHttpServer())
-    .patch(`/promos/${promo.id}`)
-    .send(updateDto);
+   
+    const res = await request(app.getHttpServer())
+      .patch(`/promos/${promo.id}`)
+      .send(updateDto)
+      .expect(200);
 
-  // Log the response for debugging
-  if (res.status !== 200) {
-    console.log('Error response:', res.status, res.body);
-  }
-  
-  expect(res.status).toBe(200);
-  console.log('Response body:', res.body);
+ 
+    expect(res.body).toBeDefined();
+    expect(res.body.nom).toBe('Promo Original');
+    expect(new Date(res.body.dateFin).getFullYear()).toBe(2026);
 
-  // Check response
-  expect(res.body.nom).toBe('Promo Updated');
-  expect(new Date(res.body.dateFin).getFullYear()).toBe(2026);
+    // 🔹 Vérifie en base de données
+    const updatedPromo = await dataSource.getRepository(Promo).findOne({
+      where: { id: promo.id },
+    });
 
-  // Verify in database
-  const updatedPromo = await dataSource.getRepository(Promo).findOne({
-    where: { id: promo.id },
+    expect(updatedPromo!.nom).toBe('Promo Original');
+    expect(new Date(updatedPromo!.dateFin).getFullYear()).toBe(2026);
   });
-
-  console.log('Updated promo from DB:', { 
-    id: updatedPromo?.id, 
-    nom: updatedPromo?.nom,
-    dateFin: updatedPromo?.dateFin
-  });
-
-  expect(updatedPromo).not.toBeNull();
-  expect(updatedPromo!.nom).toBe('Promo Updated');
-  expect(new Date(updatedPromo!.dateFin).getFullYear()).toBe(2026);
 });
+
 });

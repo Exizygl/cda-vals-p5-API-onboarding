@@ -15,8 +15,8 @@ export class CampusMapper {
     if (dto.nom !== undefined) {
       existingCampus.nom = dto.nom;
     }
-    if (dto.selectionnable !== undefined) {
-      existingCampus.actif = dto.selectionnable;
+    if (dto.actif !== undefined) {
+      existingCampus.actif = dto.actif;
     }
     return existingCampus;
   }

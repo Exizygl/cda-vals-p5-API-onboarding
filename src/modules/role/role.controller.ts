@@ -14,6 +14,11 @@ export class RoleController {
     return this.roleService.findAll();
   }
 
+  @Get('selectionnables')
+  async findSelectionnable() {
+    return this.roleService.findSelectionnable(); 
+  }
+  
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.roleService.findOne(id);
@@ -35,8 +40,5 @@ export class RoleController {
     return { message: 'Role deleted successfully' };
   }
 
-    @Get('selectionnables')
-  async findSelectionnable() {
-    return this.roleService.findSelectionnable(); 
-  }
+
 }
