@@ -17,10 +17,6 @@ export class CreatePromoDto {
   @Type(() => Date)
   dateFin: Date;
 
-  @IsNotEmpty()
-  @IsNumber()
-  statutId: number;
-
   @IsString()
   @Matches(/^\d+$/, { message: 'Id doit avoir que des characteres numérique' })
   @IsNotEmpty()
