@@ -30,7 +30,9 @@ export class PromoService implements IPromoService {
   }
 
   findAll(): Promise<Promo[]> {
-    return this.promoRepository.find();
+    return this.promoRepository.find({
+      relations: ['statutPromo', 'formation', 'campus', 'identifications']
+    });
   }
 
   async findActif(): Promise<Promo[]> {
@@ -81,11 +83,11 @@ export class PromoService implements IPromoService {
       .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
       .leftJoinAndSelect('utilisateur.roles', 'role')
       .where('statutPromo.libelle = :promoLibelle', {
-        promoLibelle: 'En attente',
+        promoLibelle: 'en attente',
       })
       .andWhere('promo.dateDebut <= :today', { today })
       .andWhere('statutIdentification.libelle = :statutLibelle', {
-        statutLibelle: 'accepter',
+        statutLibelle: 'accepté',
       })
       .orderBy('promo.dateDebut', 'ASC')
       .getMany();
@@ -115,7 +117,7 @@ export class PromoService implements IPromoService {
 
   async create(dto: CreatePromoDto): Promise<Promo> {
     const statutEnAttente =
-      await this.StatutPromoService.findByLibelle('En attente');
+      await this.StatutPromoService.findByLibelle('en attente');
 
     if (!statutEnAttente) {
       throw new Error('Statut "En attente" not found');

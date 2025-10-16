@@ -26,7 +26,7 @@ export class IdentificationService implements IIdentificationService {
   ) {}
 
   async create(dto: CreateIdentificationDto): Promise<Identification> {
-    const statut = await this.statutIdentificationRepository.findOneBy({ libelle: 'En attente' });
+    const statut = await this.statutIdentificationRepository.findOneBy({ libelle: 'en attente' });
   if (!statut) {
     throw new NotFoundException(`StatutIdentification with libelle 'En attente' not found`);
   }
@@ -54,7 +54,7 @@ export class IdentificationService implements IIdentificationService {
   async findById(id: string): Promise<Identification> {
     const identification = await this.identificationRepository.findOne({
       where: { id },
-      relations: ['statutidentification', 'promo', 'utilisateur'],
+      relations: ['statutIdentification', 'promo', 'utilisateur'],
     });
 
     if (!identification) {
