@@ -77,4 +77,10 @@ export class IdentificationService implements IIdentificationService {
 
     return this.identificationRepository.save(identification);
   }
+
+  async findAll(): Promise<Identification[]> {
+    return this.identificationRepository.find({
+      relations: ['statutIdentification', 'promo', 'utilisateur']
+    });
+  }
 }

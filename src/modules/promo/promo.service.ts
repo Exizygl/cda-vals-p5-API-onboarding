@@ -71,16 +71,28 @@ export class PromoService implements IPromoService {
   async findPromoToStart(): Promise<Promo[] | null> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
+    console.log('Today:', today);
+  
+    // Test sans conditions sur identification
+    const promosTest = await this.promoRepository
+      .createQueryBuilder('promo')
+      .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
+      .where('statutPromo.libelle = :promoLibelle', {
+        promoLibelle: 'en attente',
+      })
+      .andWhere('promo.dateDebut <= :today', { today })
+      .getMany();
+  
+    console.log('Promos with correct status and date:', promosTest.length);
+    console.log('Promo details:', JSON.stringify(promosTest, null, 2));
+  
+    // Requête complète
     const promos = await this.promoRepository
       .createQueryBuilder('promo')
       .innerJoinAndSelect('promo.statutPromo', 'statutPromo')
-      .leftJoinAndSelect('promo.identifications', 'identification')
-      .leftJoinAndSelect(
-        'identification.statutIdentification',
-        'statutIdentification',
-      )
-      .leftJoinAndSelect('identification.utilisateur', 'utilisateur')
+      .innerJoinAndSelect('promo.identifications', 'identification')
+      .innerJoinAndSelect('identification.statutIdentification', 'statutIdentification')
+      .innerJoinAndSelect('identification.utilisateur', 'utilisateur')
       .leftJoinAndSelect('utilisateur.roles', 'role')
       .where('statutPromo.libelle = :promoLibelle', {
         promoLibelle: 'en attente',
@@ -91,7 +103,8 @@ export class PromoService implements IPromoService {
       })
       .orderBy('promo.dateDebut', 'ASC')
       .getMany();
-
+  
+    console.log('Promos found with identifications:', promos.length);
     return promos.length > 0 ? promos : null;
   }
 
@@ -108,7 +121,7 @@ export class PromoService implements IPromoService {
       .leftJoinAndSelect('utilisateur.roles', 'role')
       .where('statutPromo.libelle = :actif', { actif: 'actif' })
       .andWhere('promo.dateFin < :oneMonthAgo', { oneMonthAgo })
-      .andWhere('statutIdentification.libelle = :accepted', { accepted: 'accepter' })
+      .andWhere('statutIdentification.libelle = :accepted', { accepted: 'accepté' })
       .orderBy('promo.dateFin', 'ASC')
       .getMany();
 

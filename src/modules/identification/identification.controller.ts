@@ -14,6 +14,11 @@ export class IdentificationController {
     private readonly identificationService: IIdentificationService,
   ) {}
 
+  @Get()
+async findAll(): Promise<Identification[]> {
+  return this.identificationService.findAll();
+}
+
   @Get(':id')
   async getById(@Param('id') id: string): Promise<Identification> {
     return this.identificationService.findById(id);

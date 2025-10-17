@@ -6,5 +6,6 @@ export interface IIdentificationService {
   create(dto: CreateIdentificationDto): Promise<Identification>;
   update(id: string, dto: UpdateIdentificationDto): Promise<Identification>;
   findById(id: string): Promise<Identification>;
+  findAll(): Promise<Identification[]>;
 
 }
