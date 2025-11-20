@@ -15,6 +15,7 @@ describe('IdentificationController', () => {
       findById: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      findAll: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

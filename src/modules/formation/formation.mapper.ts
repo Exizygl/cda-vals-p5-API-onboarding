@@ -15,8 +15,8 @@ export class FormationMapper {
     if (dto.nom !== undefined) {
       existingFormation.nom = dto.nom;
     }
-    if (dto.selectionnable !== undefined) {
-      existingFormation.actif = dto.selectionnable;
+    if (dto.actif !== undefined) {
+      existingFormation.actif = dto.actif;
     }
     return existingFormation;
   }
