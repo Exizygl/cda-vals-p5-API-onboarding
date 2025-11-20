@@ -1,30 +1,50 @@
-# Ignore node_modules (will be reinstalled inside container)
+# Dependencies
 node_modules
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-pnpm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist
 
 # Environment files
 .env
-.env.* 
+.env.*
+!.env.example
 
-# Logs
-logs
-*.log
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
 
-# Build outputs
-dist
-build
-tmp
-temp
-
-# OS and editor files
+# OS
 .DS_Store
 Thumbs.db
-.idea
-.vscode
 
-# Docker ignore file itself
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs
+
+# Tests
+test
+tests
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+coverage
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+
+# Docker
+Dockerfile
+docker-compose*.yml
 .dockerignore
-
