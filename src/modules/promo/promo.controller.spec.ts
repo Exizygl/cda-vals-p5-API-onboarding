@@ -142,7 +142,6 @@ describe('PromoController (Unit)', () => {
         nom: 'Promo Test',
         dateDebut: new Date('2025-09-01'),
         dateFin: new Date('2025-12-01'),
-        statutId: 1,
         formationId: '1000000000000000002',
         campusId: '1000000000000000003',
       };
@@ -160,7 +159,6 @@ describe('PromoController (Unit)', () => {
         nom: 'Invalid Promo',
         dateDebut: new Date('2025-09-01'),
         dateFin: new Date('2025-12-01'),
-        statutId: 999,
         formationId: 'invalid',
         campusId: 'invalid',
       };

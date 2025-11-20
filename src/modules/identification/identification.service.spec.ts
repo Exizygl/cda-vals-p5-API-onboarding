@@ -76,7 +76,7 @@ describe('IdentificationService', () => {
       const result = await service.create(dto as any);
 
       expect(statutRepo.findOneBy).toHaveBeenCalledWith({
-        libelle: 'En attente',
+        libelle: 'en attente',
       });
       expect(promoRepo.findOneBy).toHaveBeenCalledWith({ id: 'p1' });
       expect(utilisateurRepo.findOneBy).toHaveBeenCalledWith({ id: 'u1' });
