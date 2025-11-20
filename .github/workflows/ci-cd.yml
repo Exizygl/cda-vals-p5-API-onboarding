@@ -2,9 +2,9 @@ name: API CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 env:
   REGISTRY: ghcr.io
@@ -14,6 +14,22 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    
+    # 🔥 SERVICE POSTGRESQL POUR LES TESTS
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: onboarding_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     
     steps:
       - name: Checkout code
@@ -28,14 +44,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Run all tests (unit + integration)
         run: npm test
         env:
           DB_HOST: localhost
           DB_PORT: 5432
-          DB_USERNAME: test
-          DB_PASSWORD: test
-          DB_NAME: test_db
+          DB_USERNAME: admin
+          DB_PASSWORD: admin
+          DB_NAME: onboarding_test
 
   build:
     name: Build and Push Docker Image
@@ -90,11 +106,9 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            # Création du répertoire
             mkdir -p /opt/discord-bot
             cd /opt/discord-bot
             
-            # Création du docker-compose.yml
             cat > docker-compose.yml << 'COMPOSE_EOF'
             version: '3.8'
             
@@ -138,20 +152,13 @@ jobs:
                   - "3000:3000"
                 networks:
                   - app-network
-                healthcheck:
-                  test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-                  interval: 30s
-                  timeout: 10s
-                  retries: 3
-                  start_period: 40s
               
               bot:
                 image: ghcr.io/${{ secrets.BOT_IMAGE_NAME }}:latest
                 container_name: discord-bot
                 restart: unless-stopped
                 depends_on:
-                  api:
-                    condition: service_healthy
+                  - api
                 environment:
                   DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
                   DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
@@ -177,21 +184,11 @@ jobs:
                 driver: bridge
             COMPOSE_EOF
             
-            # Login au registry GitHub
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Pull des nouvelles images
             docker-compose pull
-            
-            # Démarrage des services
             docker-compose up -d
-            
-            # Suppression du docker-compose.yml (sécurité)
             rm -f docker-compose.yml
-            
-            # Nettoyage des anciennes images
             docker image prune -af
             
-            # Affichage du statut
             echo "✅ Deployment complete!"
             docker ps
