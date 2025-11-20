@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 
+// Feature modules
 import { UtilisateurModule } from './modules/utilisateur/utilisateur.module';
 import { RoleModule } from './modules/role/role.module';
 import { IdentificationModule } from './modules/identification/identification.module';
@@ -13,11 +12,21 @@ import { StatutIdentificationModule } from './modules/statut-identification/stat
 import { StatutPromoModule } from './modules/statut-promo/statutPromo.module';
 import { PromoModule } from './modules/promo/promo.module';
 import { ConfigBotModule } from './modules/config-bot/config-bot.module';
+import { Promo } from './modules/promo/promo.entity';
+import { StatutPromo } from './modules/statut-promo/statutPromo.entity';
+import { Formation } from './modules/formation/formation.entity';
+import { Campus } from './modules/campus/campus.entity';
+import { Identification } from './modules/identification/identification.entity';
+import { Utilisateur } from './modules/utilisateur/utilisateur.entity';
+import { StatutIdentification } from './modules/statut-identification/statutIdentification.entity';
+import { Role } from './modules/role/role.entity';
+import { ConfigBot } from './modules/config-bot/config-bot.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env.test',
     }),
 
     TypeOrmModule.forRootAsync({
@@ -27,13 +36,24 @@ import { ConfigBotModule } from './modules/config-bot/config-bot.module';
         type: 'postgres',
         host: config.get('DB_HOST', 'localhost'),
         port: parseInt(config.get('DB_PORT', '5432'), 10),
-        username: config.get('DB_USER', 'admin'),
-        password: config.get('DB_PASSWORD', 'admin'),
-        database: config.get('DB_NAME', 'onboarding-db'),
+        username: config.get('DB_USERNAME', 'postgres'),
+        password: config.get('DB_PASSWORD', 'postgres'),
+        database: config.get('DB_NAME', 'onboarding_test'),
         synchronize: true,
-        autoLoadEntities: true,
+        entities: [
+        Promo,
+        StatutPromo,
+        Formation,
+        Campus,
+        Identification,
+        Utilisateur,
+        StatutIdentification,
+        Role,
+        ConfigBot,
+        ],
       }),
     }),
+
     UtilisateurModule,
     RoleModule,
     IdentificationModule,
@@ -44,7 +64,5 @@ import { ConfigBotModule } from './modules/config-bot/config-bot.module';
     PromoModule,
     ConfigBotModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
-export class AppModule {}
+export class TestAppModule {}
