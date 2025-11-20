@@ -1,0 +1,42 @@
+import { Controller, Get, Post, Delete, Body, Param, Inject, Patch } from '@nestjs/common';
+import { IConfigBotServiceToken } from './config-bot.constants';
+import { IConfigBotService } from './interface/IConfigBotService';
+import { ConfigBotDto } from './dto/config-bot.dto';
+import { ConfigBotMapper } from './config-bot.mapper';
+
+@Controller('config-bot')
+export class ConfigBotController {
+  constructor(@Inject(IConfigBotServiceToken)
+    private readonly configBotService: IConfigBotService,) {}
+
+  @Get()
+  async findAll() {
+    const configs = await this.configBotService.findAll();
+    return configs.map(ConfigBotMapper.toPublic);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    const config = await this.configBotService.findOne(id);
+    return config ? ConfigBotMapper.toPublic(config) : null;
+  }
+
+  @Post()
+  async create(@Body() dto: ConfigBotDto) {
+    const entity = ConfigBotMapper.toEntity(dto);
+    const created = await this.configBotService.create(entity);
+    return ConfigBotMapper.toPublic(created);
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() dto: Partial<ConfigBotDto>) {
+    const updated = await this.configBotService.update(id, dto);
+    return updated ? ConfigBotMapper.toPublic(updated) : null;
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: number) {
+    await this.configBotService.delete(id);
+    return { deleted: true };
+  }
+}
