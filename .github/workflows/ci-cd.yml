@@ -15,7 +15,6 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     
-    # 🔥 SERVICE POSTGRESQL POUR LES TESTS
     services:
       postgres:
         image: postgres:16-alpine
@@ -98,97 +97,81 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          script: |
-            mkdir -p /opt/discord-bot
-            cd /opt/discord-bot
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT }}
+        envs: DB_NAME,DB_USER,DB_PASSWORD,GITHUB_TOKEN,GITHUB_REPOSITORY
+        script: |
+          set -e
+          mkdir -p /opt/discord-bot
+          cd /opt/discord-bot
+          
+          cat > docker-compose.yml << COMPOSE_EOF
+          version: '3.8'
+          
+          services:
+            postgres:
+              image: postgres:16-alpine
+              container_name: onboarding-db
+              restart: unless-stopped
+              environment:
+                POSTGRES_DB: ${DB_NAME}
+                POSTGRES_USER: ${DB_USER}
+                POSTGRES_PASSWORD: ${DB_PASSWORD}
+              ports:
+                - "5432:5432"
+              volumes:
+                - postgres_data:/var/lib/postgresql/data
+              networks:
+                - app-network
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+                interval: 10s
+                timeout: 5s
+                retries: 5
             
-            cat > docker-compose.yml << 'COMPOSE_EOF'
-            version: '3.8'
-            
-            services:
-              postgres:
-                image: postgres:16-alpine
-                container_name: onboarding-db
-                restart: unless-stopped
-                environment:
-                  POSTGRES_DB: ${{ secrets.DB_NAME }}
-                  POSTGRES_USER: ${{ secrets.DB_USER }}
-                  POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-                ports:
-                  - "5432:5432"
-                volumes:
-                  - postgres_data:/var/lib/postgresql/data
-                networks:
-                  - app-network
-                healthcheck:
-                  test: ["CMD-SHELL", "pg_isready -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }}"]
-                  interval: 10s
-                  timeout: 5s
-                  retries: 5
-              
-              api:
-                image: ghcr.io/${{ github.repository }}:latest
-                container_name: onboarding-api
-                restart: unless-stopped
-                depends_on:
-                  postgres:
-                    condition: service_healthy
-                environment:
-                  NODE_ENV: production
-                  PORT: 3000
-                  DB_HOST: postgres
-                  DB_PORT: 5432
-                  DB_USER: ${{ secrets.DB_USER }}
-                  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-                  DB_NAME: ${{ secrets.DB_NAME }}
-                ports:
-                  - "3000:3000"
-                networks:
-                  - app-network
-              
-              bot:
-                image: ghcr.io/${{ secrets.BOT_IMAGE_NAME }}:latest
-                container_name: discord-bot
-                restart: unless-stopped
-                depends_on:
-                  - api
-                environment:
-                  DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-                  DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
-                  API_BASE_URL: http://api:3000
-                  CHANNEL_IDENTIFICATION: ${{ secrets.CHANNEL_IDENTIFICATION }}
-                  CHANNEL_MANAGE_FORMATIONS: ${{ secrets.CHANNEL_MANAGE_FORMATIONS }}
-                  CHANNEL_MANAGE_CAMPUS: ${{ secrets.CHANNEL_MANAGE_CAMPUS }}
-                  CHANNEL_CREATE_PROMO: ${{ secrets.CHANNEL_CREATE_PROMO }}
-                  CHANNEL_INSCRIPTION_REQUESTS: ${{ secrets.CHANNEL_INSCRIPTION_REQUESTS }}
-                  CHANNEL_MANAGE_INSCRIPTIONS: ${{ secrets.CHANNEL_MANAGE_INSCRIPTIONS }}
-                  ROLE_ADMIN: ${{ secrets.ROLE_ADMIN }}
-                  ROLE_FORMATEUR: ${{ secrets.ROLE_FORMATEUR }}
-                  ROLE_APPRENANT: ${{ secrets.ROLE_APPRENANT }}
-                  CATEGORY_TEMPLATE_ID: ${{ secrets.CATEGORY_TEMPLATE_ID }}
-                networks:
-                  - app-network
-            
-            volumes:
-              postgres_data:
-            
-            networks:
-              app-network:
-                driver: bridge
-            COMPOSE_EOF
-            
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker-compose pull
-            docker-compose up -d
-            rm -f docker-compose.yml
-            docker image prune -af
-            
-            echo "✅ Deployment complete!"
-            docker ps
+            api:
+              image: ghcr.io/${GITHUB_REPOSITORY}:latest
+              container_name: onboarding-api
+              restart: unless-stopped
+              depends_on:
+                postgres:
+                  condition: service_healthy
+              environment:
+                NODE_ENV: production
+                PORT: 3000
+                DB_HOST: postgres
+                DB_PORT: 5432
+                DB_USER: ${DB_USER}
+                DB_PASSWORD: ${DB_PASSWORD}
+                DB_NAME: ${DB_NAME}
+              ports:
+                - "3000:3000"
+              networks:
+                - app-network
+          
+          volumes:
+            postgres_data:
+          
+          networks:
+            app-network:
+              driver: bridge
+          COMPOSE_EOF
+          
+          echo "${GITHUB_TOKEN}" | docker login ghcr.io -u Exizygl --password-stdin
+          docker compose pull
+          docker compose up -d
+          docker image prune -af
+          
+          echo "✅ Deployment complete!"
+          docker ps
+      env:
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
