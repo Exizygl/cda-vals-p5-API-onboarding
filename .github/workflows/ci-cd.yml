@@ -138,7 +138,7 @@ jobs:
                 retries: 5
             
             api:
-              image: ghcr.io/${GITHUB_REPOSITORY}:latest
+              image: ghcr.io/${REPO_LOWER}:latest
               container_name: onboarding-api
               restart: unless-stopped
               depends_on:
