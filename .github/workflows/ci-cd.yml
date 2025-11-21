@@ -110,6 +110,9 @@ jobs:
           mkdir -p /opt/discord-bot
           cd /opt/discord-bot
           
+          REPO_LOWER=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+
+
           cat > docker-compose.yml << COMPOSE_EOF
           version: '3.8'
           
