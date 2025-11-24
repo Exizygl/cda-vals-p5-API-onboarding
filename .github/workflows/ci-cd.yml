@@ -107,16 +107,12 @@ jobs:
         envs: DB_NAME,DB_USER,DB_PASSWORD,GITHUB_TOKEN,API_REPOSITORY
         script: |
           set -e
-          
-          # Utilise le home directory au lieu de /opt
           mkdir -p ~/api
           cd ~/api
           
-          # Convertir le repo en minuscules
           API_REPO_LOWER=$(echo "${API_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
           
-          # Créer le docker-compose.yml pour API + PostgreSQL
-          cat > docker-compose.yml << 'COMPOSE_EOF'
+          cat > docker-compose.yml << COMPOSE_EOF
           services:
             postgres:
               image: postgres:16-alpine
@@ -166,21 +162,12 @@ jobs:
               driver: bridge
           COMPOSE_EOF
           
-          # Remplace les variables dans le fichier
-          sed -i "s/\${API_REPO_LOWER}/${API_REPO_LOWER}/g" docker-compose.yml
-          sed -i "s/\${DB_NAME}/${DB_NAME}/g" docker-compose.yml
-          sed -i "s/\${DB_USER}/${DB_USER}/g" docker-compose.yml
-          sed -i "s/\${DB_PASSWORD}/${DB_PASSWORD}/g" docker-compose.yml
-          
-          # Login Docker
           echo "${GITHUB_TOKEN}" | docker login ghcr.io -u Exizygl --password-stdin
           
-          # Pull et relance
           docker compose pull
           docker compose up -d
           docker image prune -af
           
-          # Supprime le docker-compose.yml
           rm -f docker-compose.yml
           
           echo "✅ API + PostgreSQL deployed!"
