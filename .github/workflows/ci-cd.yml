@@ -107,6 +107,12 @@ jobs:
         envs: DB_NAME,DB_USER,DB_PASSWORD,GITHUB_TOKEN,API_REPOSITORY
         script: |
           set -e
+          
+          # Arrête les conteneurs existants
+          echo "🔄 Stopping existing containers..."
+          docker stop onboarding-api onboarding-db 2>/dev/null || true
+          docker rm onboarding-api onboarding-db 2>/dev/null || true
+          
           mkdir -p ~/api
           cd ~/api
           
